@@ -113,10 +113,10 @@ public class ZookeeperTest implements Watcher {
     public static void main(String[] args) {
         ZookeeperTest zookeeperTest = new ZookeeperTest();
         try {
-            zookeeperTest.connectZookeeper("192.168.40.207:2181");
-            zookeeperTest.createNode("/Snowflake", "".getBytes(), ZooDefs.Ids.OPEN_ACL_UNSAFE);
+            zookeeperTest.connectZookeeper("192.168.40.119:2181,192.168.40.122:2181,192.168.40.123:2181");
+//            zookeeperTest.createNode("/Snowflake", "".getBytes(), ZooDefs.Ids.OPEN_ACL_UNSAFE);
 //            System.out.println(zookeeperTest.getNodeDate("/testNode/UID-TEST"));
-//            zookeeperTest.modifyNode("/testNode/UID-TEST", "2".getBytes());
+            zookeeperTest.modifyNode("/Snowflake/SESSION-TEST-LOG", "0".getBytes());
 //            System.out.println(zookeeperTest.getNodeDate("/testNode/UID-TEST"));
 
         } catch (Exception e) {

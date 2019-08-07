@@ -37,20 +37,26 @@ public class ZookeeperUtils implements Watcher {
      * @param path 节点路径
      */
     public int modifyNode(String path) {
-        int workerId;
+        createNode("/Snowflake/" + FlowWriteConfig.KAFKA_TOPIC, "0".getBytes(), ZooDefs.Ids.OPEN_ACL_UNSAFE);
+        int workerId = 0;
         try {
             connectZookeeper(FlowWriteConfig.ZOOKEEPER_SERVERS);
             Stat stat = zookeeper.exists(path, true);
             workerId = Integer.parseInt(getNodeDate(path));
-            String result = String.valueOf(workerId + 2);
-            if (stat != null) {
-                zookeeper.setData(path, result.getBytes(), stat.getVersion());
-            } else {
-                logger.error("Node does not exist!,Can't modify");
+            if (workerId > 55){
+                workerId = 0;
+                zookeeper.setData(path, "1".getBytes(), stat.getVersion());
+            }else {
+                String result = String.valueOf(workerId + 1);
+                if (stat != null) {
+                    zookeeper.setData(path, result.getBytes(), stat.getVersion());
+                } else {
+                    logger.error("Node does not exist!,Can't modify");
+                }
             }
         } catch (KeeperException | InterruptedException e) {
             e.printStackTrace();
-            workerId = RandomUtils.nextInt(30, 63);
+            workerId = RandomUtils.nextInt(56, 63);
         } finally {
             closeConn();
         }
@@ -72,9 +78,14 @@ public class ZookeeperUtils implements Watcher {
         }
     }
 
+    /**
+     * 关闭连接
+     */
     public void closeConn() {
         try {
-            zookeeper.close();
+            if (zookeeper != null) {
+                zookeeper.close();
+            }
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

@@ -54,7 +54,7 @@ public class KafkaLogNtc {
                 }
             });
             if (errorSum[0] > FlowWriteConfig.MAX_FAILURE_NUM) {
-                logger.error("超出最大容忍错误数抛弃数据条数:" + list.size());
+                InfluxDbUtils.sendKafkaFail(list.size());
                 list.clear();
             }
         }
@@ -75,7 +75,7 @@ public class KafkaLogNtc {
         properties.put("request.timeout.ms", 60000);
         properties.put("batch.size", 262144);
         properties.put("buffer.memory", 33554432);
-//        properties.put("compression.type", "snappy");
+        properties.put("compression.type", "snappy");
         kafkaProducer = new KafkaProducer<>(properties);
     }
 

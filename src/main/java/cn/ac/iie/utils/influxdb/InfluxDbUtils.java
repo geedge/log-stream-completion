@@ -8,6 +8,7 @@ import org.influxdb.dto.Point;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.function.LongFunction;
 
 /**
  * 写入influxDB工具类
@@ -19,14 +20,29 @@ public class InfluxDbUtils {
     /**
      * 原始日志写入数据中心kafka失败标识
      */
-    public static void sendKafkaFail() {
+    public static void sendKafkaFail(int discarded) {
         InfluxDB client = InfluxDBFactory.connect(FlowWriteConfig.INFLUX_IP, FlowWriteConfig.INFLUX_USERNAME, FlowWriteConfig.INFLUX_PASSWORD);
-        Point point1 = Point.measurement("sendkafkafail")
+        Point point1 = Point.measurement("SendKafkaFail")
                 .tag("topology", FlowWriteConfig.KAFKA_TOPIC)
                 .tag("hostname", getIp())
-                .field("state", 1)
+                .field("discarded", discarded)
                 .build();
-        client.write("kafka", "", point1);
+        client.write("BusinessMonitor", "", point1);
+    }
+
+    /**
+     * 原始日志写入数据中心kafka失败标识
+     */
+    public static void sendKafkaSuccess(Long complete) {
+        if (complete != 0) {
+            InfluxDB client = InfluxDBFactory.connect(FlowWriteConfig.INFLUX_IP, FlowWriteConfig.INFLUX_USERNAME, FlowWriteConfig.INFLUX_PASSWORD);
+            Point point1 = Point.measurement("SendKafkaSuccess")
+                    .tag("topology", FlowWriteConfig.KAFKA_TOPIC)
+                    .tag("hostname", getIp())
+                    .field("complete", complete)
+                    .build();
+            client.write("BusinessMonitor", "", point1);
+        }
     }
 
     /**
@@ -43,6 +59,11 @@ public class InfluxDbUtils {
             e.printStackTrace();
             return null;
         }
+    }
+
+    public static void main(String[] args) {
+        sendKafkaFail(100);
+        sendKafkaSuccess(100L);
     }
 
 }

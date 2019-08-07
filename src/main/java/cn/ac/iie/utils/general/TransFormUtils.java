@@ -4,6 +4,8 @@ import cn.ac.iie.bean.SessionRecordLog;
 import cn.ac.iie.common.FlowWriteConfig;
 import cn.ac.iie.utils.redis.RedisPollUtils;
 import cn.ac.iie.utils.system.SnowflakeId;
+import cn.ac.iie.utils.zookeeper.DistributedLock;
+import cn.ac.iie.utils.zookeeper.ZookeeperUtils;
 import com.alibaba.fastjson.JSONObject;
 import com.zdjizhi.utils.IpLookup;
 import com.zdjizhi.utils.StringUtil;
@@ -29,6 +31,8 @@ public class TransFormUtils {
             .loadAsnDataFileV4(FlowWriteConfig.IP_LIBRARY + "asn_v4.mmdb")
             .loadAsnDataFileV6(FlowWriteConfig.IP_LIBRARY + "asn_v6.mmdb")
             .build();
+//    private static ZookeeperUtils zookeeperUtils = new ZookeeperUtils();
+//    private static SnowflakeId snowflakeId = new SnowflakeId();
 
     /**
      * 解析日志，并补全
@@ -54,7 +58,6 @@ public class TransFormUtils {
             logger.error("日志解析过程出现异常", e);
             return "";
         }
-
     }
 
     /**

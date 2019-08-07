@@ -3,6 +3,7 @@ package cn.ac.iie.topology;
 
 import cn.ac.iie.bolt.ConnCompletionBolt;
 import cn.ac.iie.bolt.NtcLogSendBolt;
+import cn.ac.iie.bolt.SummaryBolt;
 import cn.ac.iie.common.FlowWriteConfig;
 import cn.ac.iie.spout.CustomizedKafkaSpout;
 import org.apache.log4j.Logger;
@@ -59,6 +60,7 @@ public class LogFlowWriteTopology {
         builder.setSpout("LogFlowWriteSpout", new CustomizedKafkaSpout(), FlowWriteConfig.SPOUT_PARALLELISM);
         builder.setBolt("ConnCompletionBolt", new ConnCompletionBolt(), FlowWriteConfig.DATACENTER_BOLT_PARALLELISM).localOrShuffleGrouping("LogFlowWriteSpout");
         builder.setBolt("NtcLogSendBolt", new NtcLogSendBolt(), FlowWriteConfig.KAFKA_BOLT_PARALLELISM).localOrShuffleGrouping("ConnCompletionBolt");
+        builder.setBolt("SummaryBolt", new SummaryBolt(), 1).localOrShuffleGrouping("NtcLogSendBolt");
     }
 
     public static void main(String[] args) throws Exception {

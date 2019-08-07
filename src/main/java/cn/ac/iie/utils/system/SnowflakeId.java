@@ -1,11 +1,9 @@
 package cn.ac.iie.utils.system;
 
 import cn.ac.iie.common.FlowWriteConfig;
-import cn.ac.iie.utils.kafka.KafkaLogNtc;
-import cn.ac.iie.utils.redis.RedisPollUtils;
+import cn.ac.iie.utils.zookeeper.DistributedLock;
 import cn.ac.iie.utils.zookeeper.ZookeeperUtils;
 import org.apache.log4j.Logger;
-import org.apache.zookeeper.ZooDefs;
 
 /**
  * 雪花算法
@@ -86,33 +84,32 @@ public class SnowflakeId {
      */
     private long lastTimestamp = -1L;
 
+
     private static SnowflakeId idWorker;
 
+    private static ZookeeperUtils zookeeperUtils = new ZookeeperUtils();
+
     static {
-        ZookeeperUtils zookeeperUtils = new ZookeeperUtils();
-        zookeeperUtils.createNode("/Snowflake/" + FlowWriteConfig.KAFKA_TOPIC,"0".getBytes(), ZooDefs.Ids.OPEN_ACL_UNSAFE);
-//        idWorker = new SnowflakeId(RedisPollUtils.getWorkerId(FlowWriteConfig.KAFKA_TOPIC), FlowWriteConfig.DATA_CENTER_ID_NUM);
-        idWorker = new SnowflakeId(zookeeperUtils.modifyNode("/Snowflake/" + FlowWriteConfig.KAFKA_TOPIC), FlowWriteConfig.DATA_CENTER_ID_NUM);
-//        idWorker = new SnowflakeId(12, FlowWriteConfig.DATA_CENTER_ID_NUM);
+        idWorker = new SnowflakeId();
     }
 
     //==============================Constructors=====================================
 
     /**
      * 构造函数
-     *
-     * @param workerId     工作ID (0~63)
-     * @param dataCenterId 数据中心ID (0~15)
      */
-    private SnowflakeId(int workerId, int dataCenterId) {
-        if (workerId > maxWorkerId || workerId < 0) {
-            throw new IllegalArgumentException(String.format("workerId can't be greater than %d or less than 0", maxWorkerId));
+    private SnowflakeId() {
+        DistributedLock lock = new DistributedLock(FlowWriteConfig.ZOOKEEPER_SERVERS, "disLocks1");
+        lock.lock();
+        int tmpWorkerId = zookeeperUtils.modifyNode("/Snowflake/" + FlowWriteConfig.KAFKA_TOPIC);
+        if (tmpWorkerId > maxWorkerId || tmpWorkerId < 0) {
+            throw new IllegalArgumentException(String.format("worker Id can't be greater than %d or less than 0", maxWorkerId));
         }
-        if (dataCenterId > maxDataCenterId || dataCenterId < 0) {
-            throw new IllegalArgumentException(String.format("dataCenterId can't be greater than %d or less than 0", maxDataCenterId));
+        if (FlowWriteConfig.DATA_CENTER_ID_NUM > maxDataCenterId || FlowWriteConfig.DATA_CENTER_ID_NUM < 0) {
+            throw new IllegalArgumentException(String.format("datacenter Id can't be greater than %d or less than 0", maxDataCenterId));
         }
-        this.workerId = workerId;
-        this.dataCenterId = dataCenterId;
+        this.workerId = tmpWorkerId;
+        this.dataCenterId = FlowWriteConfig.DATA_CENTER_ID_NUM;
     }
 
     // ==============================Methods==========================================
@@ -188,15 +185,5 @@ public class SnowflakeId {
         return idWorker.nextId();
     }
 
-    public static void main(String[] args) {
-        while (true) {
-            try {
-                logger.info(SnowflakeId.generateId());
-
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-    }
 
 }
