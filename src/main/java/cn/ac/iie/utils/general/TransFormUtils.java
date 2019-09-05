@@ -114,5 +114,10 @@ public class TransFormUtils {
         return "";
     }
 
+    public static void main(String[] args) {
+        String s = ipLookup.countryLookup("192.168.10.207");
+        System.out.println(s);
+    }
+
 
 }

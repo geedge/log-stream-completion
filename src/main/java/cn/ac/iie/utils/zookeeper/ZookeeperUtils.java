@@ -37,16 +37,17 @@ public class ZookeeperUtils implements Watcher {
      * @param path 节点路径
      */
     public int modifyNode(String path) {
+        createNode("/Snowflake", null, ZooDefs.Ids.OPEN_ACL_UNSAFE);
         createNode("/Snowflake/" + FlowWriteConfig.KAFKA_TOPIC, "0".getBytes(), ZooDefs.Ids.OPEN_ACL_UNSAFE);
-        int workerId = 0;
+        int workerId;
         try {
-            connectZookeeper(FlowWriteConfig.ZOOKEEPER_SERVERS);
+            connectZookeeper();
             Stat stat = zookeeper.exists(path, true);
             workerId = Integer.parseInt(getNodeDate(path));
-            if (workerId > 55){
+            if (workerId > 55) {
                 workerId = 0;
                 zookeeper.setData(path, "1".getBytes(), stat.getVersion());
-            }else {
+            } else {
                 String result = String.valueOf(workerId + 1);
                 if (stat != null) {
                     zookeeper.setData(path, result.getBytes(), stat.getVersion());
@@ -67,11 +68,10 @@ public class ZookeeperUtils implements Watcher {
     /**
      * 连接zookeeper
      *
-     * @param host 地址
      */
-    public void connectZookeeper(String host) {
+    private void connectZookeeper() {
         try {
-            zookeeper = new ZooKeeper(host, SESSION_TIME_OUT, this);
+            zookeeper = new ZooKeeper(FlowWriteConfig.ZOOKEEPER_SERVERS, SESSION_TIME_OUT, this);
             countDownLatch.await();
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
@@ -81,7 +81,7 @@ public class ZookeeperUtils implements Watcher {
     /**
      * 关闭连接
      */
-    public void closeConn() {
+    private void closeConn() {
         try {
             if (zookeeper != null) {
                 zookeeper.close();
@@ -97,7 +97,7 @@ public class ZookeeperUtils implements Watcher {
      * @param path 节点路径
      * @return 内容/异常null
      */
-    public String getNodeDate(String path) {
+    private String getNodeDate(String path) {
         String result = null;
         Stat stat = new Stat();
         try {
@@ -115,9 +115,9 @@ public class ZookeeperUtils implements Watcher {
      * @param date 节点所存储的数据的byte[]
      * @param acls 控制权限策略
      */
-    public void createNode(String path, byte[] date, List<ACL> acls) {
+    private void createNode(String path, byte[] date, List<ACL> acls) {
         try {
-            connectZookeeper(FlowWriteConfig.ZOOKEEPER_SERVERS);
+            connectZookeeper();
             Stat exists = zookeeper.exists(path, true);
             if (exists == null) {
                 zookeeper.create(path, date, acls, CreateMode.PERSISTENT);
