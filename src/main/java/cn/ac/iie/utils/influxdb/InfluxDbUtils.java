@@ -63,7 +63,7 @@ public class InfluxDbUtils {
 
     public static void main(String[] args) {
         sendKafkaFail(100);
-        sendKafkaSuccess(100L);
+//        sendKafkaSuccess(100L);
     }
 
 }

@@ -78,6 +78,9 @@ public class SessionRecordLog {
     private String framed_ip;
     private String account;
     private int packet_type;
+    private int has_dup_traffic;
+    private String stream_error;
+
 
     public SessionRecordLog() {
     }
@@ -649,5 +652,21 @@ public class SessionRecordLog {
 
     public void setPacket_type(int packet_type) {
         this.packet_type = packet_type;
+    }
+
+    public int getHas_dup_traffic() {
+        return has_dup_traffic;
+    }
+
+    public void setHas_dup_traffic(int has_dup_traffic) {
+        this.has_dup_traffic = has_dup_traffic;
+    }
+
+    public String getStream_error() {
+        return stream_error;
+    }
+
+    public void setStream_error(String stream_error) {
+        this.stream_error = stream_error;
     }
 }
