@@ -54,7 +54,7 @@ public class KafkaLogNtc {
                 }
             });
             if (errorSum[0] > FlowWriteConfig.MAX_FAILURE_NUM) {
-                InfluxDbUtils.sendKafkaFail(list.size());
+//                InfluxDbUtils.sendKafkaFail(list.size());
                 list.clear();
             }
         }
