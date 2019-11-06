@@ -59,7 +59,7 @@ public class KafkaLogNtc {
             }
         }
         kafkaProducer.flush();
-        logger.warn("Log sent to National Center successfully!!!!!");
+        logger.debug("Log sent to National Center successfully!!!!!");
     }
 
     /**
@@ -75,7 +75,7 @@ public class KafkaLogNtc {
         properties.put("request.timeout.ms", 60000);
         properties.put("batch.size", 262144);
         properties.put("buffer.memory", 33554432);
-        properties.put("compression.type", "snappy");
+//        properties.put("compression.type", "snappy");
         kafkaProducer = new KafkaProducer<>(properties);
     }
 

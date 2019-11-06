@@ -60,7 +60,7 @@ public class NtcLogSendBolt extends BaseBasicBolt {
                 }
             }
         } catch (Exception e) {
-            logger.error("日志发送Kafka过程出现异常 ", e);
+            logger.error("日志发送Kafka过程出现异常");
             e.printStackTrace();
         }
     }

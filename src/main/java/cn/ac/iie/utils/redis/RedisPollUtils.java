@@ -43,7 +43,7 @@ public class RedisPollUtils {
             poolConfig.setTestOnBorrow(Boolean.valueOf(props.getProperty(FlowWriteConfig.REDIS_POOL_TESTONBORROW)));
             // 根据配置实例化jedis池
             jedisPool = new JedisPool(poolConfig, props.getProperty(FlowWriteConfig.REDIS_IP),
-                    Integer.valueOf(props.getProperty(FlowWriteConfig.REDIS_PORT)));
+                    Integer.valueOf(props.getProperty(FlowWriteConfig.REDIS_PORT)), 3000, "123456");
         } catch (Exception e) {
             logger.error("Redis连接池初始化错误", e);
         }
@@ -96,19 +96,15 @@ public class RedisPollUtils {
 //        return workId;
 //    }
 
-    public static Integer getWorkerId(String key) {
-        int workId = 0;
+    public static String getWorkerId(String key) {
+        String sub = "";
         try (Jedis jedis = RedisPollUtils.getJedis()) {
-            if (jedis != null) {
-                workId = Integer.parseInt(jedis.get(key));
-                jedis.set(key, String.valueOf(workId + 2));
-                logger.error("\n工作id是：" + workId + "\n");
-            }
+            sub = jedis.get(key);
         } catch (Exception e) {
             logger.error("通过Redis获取用户名出现异常", e);
-            workId = RandomUtils.nextInt(0, 31);
+
         }
-        return workId;
+        return sub;
     }
 
 

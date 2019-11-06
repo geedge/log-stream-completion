@@ -190,27 +190,14 @@ public class DistributedLock implements Lock, Watcher {
 
     public static void main(String[] args) {
         ZookeeperUtils zookeeperUtils = new ZookeeperUtils();
-
         Runnable runnable = new Runnable() {
             @Override
             public void run() {
-                DistributedLock lock = null;
-                try {
-                    lock = new DistributedLock(FlowWriteConfig.ZOOKEEPER_SERVERS, "disLocks1");
-                    lock.lock();
-//                    System.out.println(SnowflakeId.generateId());
-                    System.out.println(1);
-                    Thread.sleep(3000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                } finally {
-                    if (lock != null) {
-                        lock.unlock();
-                    }
-                }
+                DistributedLock lock = new DistributedLock(FlowWriteConfig.ZOOKEEPER_SERVERS, "disLocks1");
+                lock.lock();
+                lock.unlock();
             }
         };
-
         for (int i = 0; i < 10; i++) {
             Thread t = new Thread(runnable);
             t.start();

@@ -3,7 +3,7 @@ package cn.ac.iie.topology;
 
 import cn.ac.iie.bolt.ConnCompletionBolt;
 import cn.ac.iie.bolt.NtcLogSendBolt;
-import cn.ac.iie.bolt.SummaryBolt;
+import cn.ac.iie.bolt.radius.RadiusCompletionBolt;
 import cn.ac.iie.common.FlowWriteConfig;
 import cn.ac.iie.spout.CustomizedKafkaSpout;
 import org.apache.log4j.Logger;
@@ -58,8 +58,13 @@ public class LogFlowWriteTopology {
     private void buildTopology() {
         builder = new TopologyBuilder();
         builder.setSpout("LogFlowWriteSpout", new CustomizedKafkaSpout(), FlowWriteConfig.SPOUT_PARALLELISM);
-        builder.setBolt("ConnCompletionBolt", new ConnCompletionBolt(), FlowWriteConfig.DATACENTER_BOLT_PARALLELISM).localOrShuffleGrouping("LogFlowWriteSpout");
-        builder.setBolt("NtcLogSendBolt", new NtcLogSendBolt(), FlowWriteConfig.KAFKA_BOLT_PARALLELISM).localOrShuffleGrouping("ConnCompletionBolt");
+        if ("RADIUS-LOG".equals(FlowWriteConfig.KAFKA_TOPIC)) {
+            builder.setBolt("RadiusCompletionBolt", new RadiusCompletionBolt(), FlowWriteConfig.DATACENTER_BOLT_PARALLELISM).localOrShuffleGrouping("LogFlowWriteSpout");
+            builder.setBolt("NtcLogSendBolt", new NtcLogSendBolt(), FlowWriteConfig.KAFKA_BOLT_PARALLELISM).localOrShuffleGrouping("RadiusCompletionBolt");
+        } else {
+            builder.setBolt("ConnCompletionBolt", new ConnCompletionBolt(), FlowWriteConfig.DATACENTER_BOLT_PARALLELISM).localOrShuffleGrouping("LogFlowWriteSpout");
+            builder.setBolt("NtcLogSendBolt", new NtcLogSendBolt(), FlowWriteConfig.KAFKA_BOLT_PARALLELISM).localOrShuffleGrouping("ConnCompletionBolt");
+        }
 //        builder.setBolt("SummaryBolt", new SummaryBolt(), 1).localOrShuffleGrouping("NtcLogSendBolt");
     }
 

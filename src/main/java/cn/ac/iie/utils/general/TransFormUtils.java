@@ -2,6 +2,7 @@ package cn.ac.iie.utils.general;
 
 import cn.ac.iie.bean.SessionRecordLog;
 import cn.ac.iie.common.FlowWriteConfig;
+import cn.ac.iie.utils.hbase.HbaseUtils;
 import cn.ac.iie.utils.redis.RedisPollUtils;
 import cn.ac.iie.utils.system.SnowflakeId;
 import cn.ac.iie.utils.zookeeper.DistributedLock;
@@ -31,8 +32,6 @@ public class TransFormUtils {
             .loadAsnDataFileV4(FlowWriteConfig.IP_LIBRARY + "asn_v4.mmdb")
             .loadAsnDataFileV6(FlowWriteConfig.IP_LIBRARY + "asn_v6.mmdb")
             .build();
-//    private static ZookeeperUtils zookeeperUtils = new ZookeeperUtils();
-//    private static SnowflakeId snowflakeId = new SnowflakeId();
 
     /**
      * 解析日志，并补全
@@ -52,13 +51,39 @@ public class TransFormUtils {
             sessionRecordLog.setServer_asn(ipLookup.asnLookup(serverIp, true));
             sessionRecordLog.setDomain(getTopDomain(sessionRecordLog.getSni(), sessionRecordLog.getHost()));
             sessionRecordLog.setRecv_time(System.currentTimeMillis() / 1000);
-//            sessionRecordLog.setSubscribe_id(getSubscribeId(clientIp));
+//            sessionRecordLog.setSubscribe_id(HbaseUtils.getAccount(clientIp));
             return JSONObject.toJSONString(sessionRecordLog);
         } catch (Exception e) {
-            logger.error("日志解析过程出现异常", e);
+            logger.error(FlowWriteConfig.KAFKA_TOPIC + "日志解析过程出现异常", e);
             return "";
         }
     }
+
+
+    /**
+     * 解析日志，并补全
+     *
+     * @param message radius原始日志
+     * @return 补全后的日志
+     */
+    public static String getRadiusMessage(String message) {
+        SessionRecordLog sessionRecordLog = JSONObject.parseObject(message, SessionRecordLog.class);
+        String serverIp = sessionRecordLog.getServer_ip();
+        String clientIp = sessionRecordLog.getClient_ip();
+        try {
+            sessionRecordLog.setUid(SnowflakeId.generateId());
+            sessionRecordLog.setServer_location(ipLookup.countryLookup(serverIp));
+            sessionRecordLog.setClient_location(ipLookup.cityLookupDetail(clientIp));
+            sessionRecordLog.setClient_asn(ipLookup.asnLookup(clientIp, true));
+            sessionRecordLog.setServer_asn(ipLookup.asnLookup(serverIp, true));
+            sessionRecordLog.setRecv_time(System.currentTimeMillis() / 1000);
+            return JSONObject.toJSONString(sessionRecordLog);
+        } catch (Exception e) {
+            logger.error(FlowWriteConfig.KAFKA_TOPIC + "日志解析过程出现异常", e);
+            return "";
+        }
+    }
+
 
     /**
      * 有sni通过sni获取域名，有hots根据host获取域名
@@ -67,7 +92,7 @@ public class TransFormUtils {
      * @param host host
      * @return 顶级域名
      */
-    private static String getTopDomain(String sni, String host) {
+    public static String getTopDomain(String sni, String host) {
         if (StringUtil.isNotBlank(sni)) {
             return getDomain(sni);
         } else if (StringUtil.isNotBlank(host)) {

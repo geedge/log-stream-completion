@@ -1,5 +1,8 @@
 package cn.ac.iie.bolt;
 
+import cn.ac.iie.common.FlowWriteConfig;
+import cn.ac.iie.utils.hbase.HbaseUtils;
+import cn.ac.iie.utils.system.TupleUtils;
 import com.zdjizhi.utils.StringUtil;
 import org.apache.log4j.Logger;
 import org.apache.storm.task.TopologyContext;
@@ -10,6 +13,7 @@ import org.apache.storm.tuple.Fields;
 import org.apache.storm.tuple.Tuple;
 import org.apache.storm.tuple.Values;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import static cn.ac.iie.utils.general.TransFormUtils.getJsonMessage;
@@ -31,13 +35,26 @@ public class ConnCompletionBolt extends BaseBasicBolt {
     @Override
     public void execute(Tuple tuple, BasicOutputCollector basicOutputCollector) {
         try {
-            String message = tuple.getString(0);
-            if (StringUtil.isNotBlank(message)) {
-                basicOutputCollector.emit(new Values(getJsonMessage(message)));
+            if (TupleUtils.isTick(tuple)) {
+//                HbaseUtils.change();
+            } else {
+                String message = tuple.getString(0);
+                if (StringUtil.isNotBlank(message)) {
+                    basicOutputCollector.emit(new Values(getJsonMessage(message)));
+                }
             }
+
         } catch (Exception e) {
             logger.error("接收解析过程出现异常", e);
         }
+    }
+
+    @Override
+    public Map<String, Object> getComponentConfiguration() {
+        Map<String, Object> conf = new HashMap<String, Object>(16);
+        conf.put(org.apache.storm.Config.TOPOLOGY_TICK_TUPLE_FREQ_SECS,
+                FlowWriteConfig.TOPOLOGY_TICK_TUPLE_FREQ_SECS);
+        return conf;
     }
 
     @Override

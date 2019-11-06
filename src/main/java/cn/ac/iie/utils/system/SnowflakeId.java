@@ -2,6 +2,7 @@ package cn.ac.iie.utils.system;
 
 import cn.ac.iie.common.FlowWriteConfig;
 import cn.ac.iie.utils.zookeeper.DistributedLock;
+import cn.ac.iie.utils.zookeeper.ZooKeeperLock;
 import cn.ac.iie.utils.zookeeper.ZookeeperUtils;
 import org.apache.log4j.Logger;
 
@@ -98,19 +99,40 @@ public class SnowflakeId {
     /**
      * 构造函数
      */
+//    private SnowflakeId() {
+//        DistributedLock lock = new DistributedLock(FlowWriteConfig.ZOOKEEPER_SERVERS, "disLocks1");
+//        lock.lock();
+//        int tmpWorkerId = zookeeperUtils.modifyNode("/Snowflake/" + FlowWriteConfig.KAFKA_TOPIC);
+//        if (tmpWorkerId > maxWorkerId || tmpWorkerId < 0) {
+//            throw new IllegalArgumentException(String.format("worker Id can't be greater than %d or less than 0", maxWorkerId));
+//        }
+//        int dataCenterId = FlowWriteConfig.DATA_CENTER_ID_NUM;
+//        if (dataCenterId > maxDataCenterId || dataCenterId < 0) {
+//            throw new IllegalArgumentException(String.format("datacenter Id can't be greater than %d or less than 0", maxDataCenterId));
+//        }
+//        this.workerId = tmpWorkerId;
+//        this.dataCenterId = dataCenterId;
+//    }
+
     private SnowflakeId() {
-        DistributedLock lock = new DistributedLock(FlowWriteConfig.ZOOKEEPER_SERVERS, "disLocks1");
-        lock.lock();
-        int tmpWorkerId = zookeeperUtils.modifyNode("/Snowflake/" + FlowWriteConfig.KAFKA_TOPIC);
-        if (tmpWorkerId > maxWorkerId || tmpWorkerId < 0) {
-            throw new IllegalArgumentException(String.format("worker Id can't be greater than %d or less than 0", maxWorkerId));
+        ZooKeeperLock lock = new ZooKeeperLock(FlowWriteConfig.ZOOKEEPER_SERVERS, "/locks", "disLocks");
+        if (lock.lock()) {
+            int tmpWorkerId = zookeeperUtils.modifyNode("/Snowflake/" + FlowWriteConfig.KAFKA_TOPIC);
+            if (tmpWorkerId > maxWorkerId || tmpWorkerId < 0) {
+                throw new IllegalArgumentException(String.format("worker Id can't be greater than %d or less than 0", maxWorkerId));
+            }
+            int dataCenterId = FlowWriteConfig.DATA_CENTER_ID_NUM;
+            if (dataCenterId > maxDataCenterId || dataCenterId < 0) {
+                throw new IllegalArgumentException(String.format("datacenter Id can't be greater than %d or less than 0", maxDataCenterId));
+            }
+            this.workerId = tmpWorkerId;
+            this.dataCenterId = dataCenterId;
+            try {
+                lock.unlock();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
-        int dataCenterId = FlowWriteConfig.DATA_CENTER_ID_NUM;
-        if (dataCenterId > maxDataCenterId || dataCenterId < 0) {
-            throw new IllegalArgumentException(String.format("datacenter Id can't be greater than %d or less than 0", maxDataCenterId));
-        }
-        this.workerId = tmpWorkerId;
-        this.dataCenterId = dataCenterId;
     }
 
     // ==============================Methods==========================================
