@@ -1,6 +1,7 @@
 package cn.ac.iie.topology;
 
 
+import cn.ac.iie.bean.CollectProtocolRecordLog;
 import cn.ac.iie.bolt.NtcLogSendBolt;
 import cn.ac.iie.bolt.collectProtocol.CollectCompletedBolt;
 import cn.ac.iie.bolt.radius.RadiusCompletionBolt;
@@ -76,7 +77,7 @@ public class LogFlowWriteTopology {
                 builder.setBolt("NtcLogSendBolt", new NtcLogSendBolt(), FlowWriteConfig.KAFKA_BOLT_PARALLELISM).localOrShuffleGrouping("RadiusCompletionBolt");
                 break;
 
-            case "COLLECT-CONNECTION-RECORD-LOG":
+            case "COLLECT-PROTOCOL-RECORD-LOG":
                 builder.setBolt("CollectCompletedBolt", new CollectCompletedBolt(), FlowWriteConfig.DATACENTER_BOLT_PARALLELISM).localOrShuffleGrouping("LogFlowWriteSpout");
                 builder.setBolt("NtcLogSendBolt", new NtcLogSendBolt(), FlowWriteConfig.KAFKA_BOLT_PARALLELISM).localOrShuffleGrouping("CollectCompletedBolt");
                 break;

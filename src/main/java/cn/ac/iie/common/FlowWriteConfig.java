@@ -49,17 +49,6 @@ public class FlowWriteConfig {
 
     public static final String IP_LIBRARY = FlowWriteConfigurations.getStringProperty(0, "ip.library");
 
-
-    /***
-     * Redis
-     */
-    public static final String REDIS_IP = "redis.ip";
-    public static final String REDIS_PORT = "redis.port";
-    public static final String REDIS_TIMEOUT = "redis.timeout";
-    public static final String REDIS_POOL_MAXACTIVE = "redis.pool.maxActive";
-    public static final String REDIS_POOL_MAXIDLE = "redis.pool.maxIdle";
-    public static final String REDIS_POOL_MAXWAIT = "redis.pool.maxWait";
-    public static final String REDIS_POOL_TESTONBORROW = "redis.pool.testOnBorrow";
-    public static final String REDIS_POOL_TESTONRETURN = "redis.pool.testOnReturn";
+    
 
 }
