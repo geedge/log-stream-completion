@@ -9,12 +9,17 @@ package cn.ac.iie.bean;
 public class RadiusSessionRecordLog extends PublicSessionRecordLog {
 
 
-//TODO RADIUS协议属性  4
+//TODO RADIUS协议属性  8
 
     private int radius_session_timeout;
     private int radius_idle_timeout;
     private int radius_acct_status_type;
     private int radius_acct_terminate_cause;
+    private int radius_packet_type;
+    private String radius_nas_ip;
+    private String radius_framed_ip;
+    private String radius_account;
+
 
     public int getRadius_session_timeout() {
         return radius_session_timeout;
@@ -47,13 +52,6 @@ public class RadiusSessionRecordLog extends PublicSessionRecordLog {
     public void setRadius_acct_terminate_cause(int radius_acct_terminate_cause) {
         this.radius_acct_terminate_cause = radius_acct_terminate_cause;
     }
-
-    private int radius_packet_type;
-
-    private String radius_nas_ip;
-    private String radius_framed_ip;
-    private String radius_account;
-
 
     public int getRadius_packet_type() {
         return radius_packet_type;

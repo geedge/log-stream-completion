@@ -2,7 +2,7 @@ package cn.ac.iie.topology;
 
 
 import cn.ac.iie.bolt.NtcLogSendBolt;
-import cn.ac.iie.bolt.collectprotocol.CollectCompletedBolt;
+import cn.ac.iie.bolt.collect.CollectCompletedBolt;
 import cn.ac.iie.bolt.radius.RadiusCompletionBolt;
 import cn.ac.iie.bolt.security.SecurityCompletionBolt;
 

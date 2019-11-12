@@ -78,7 +78,6 @@ public class TransFormUtils {
             proxySessionRecordLog.setCommon_server_asn(ipLookup.asnLookup(serverIp, true));
             //TODO 集成AAA数据subscribe_id -数据端补全
             proxySessionRecordLog.setCommon_subscriber_id(HbaseUtils.getAccount(clientIp));
-//            proxySessionRecordLog.setCommon_subscriber_id("aaaaaaa");
             proxySessionRecordLog.setHttp_domain(getTopDomain(null, proxySessionRecordLog.getHttp_host()));
             return JSONObject.toJSONString(proxySessionRecordLog);
         } catch (Exception e) {
@@ -109,7 +108,6 @@ public class TransFormUtils {
             securitySessionRecordLog.setCommon_server_asn(ipLookup.asnLookup(serverIp, true));
             //TODO 集成AAA数据subscribe_id -数据端补全
             securitySessionRecordLog.setCommon_subscriber_id(HbaseUtils.getAccount(clientIp));
-//            securitySessionRecordLog.setCommon_subscriber_id("aaaaa");
             securitySessionRecordLog.setHttp_domain(getTopDomain(securitySessionRecordLog.getSsl_sni(), securitySessionRecordLog.getHttp_host()));
             return JSONObject.toJSONString(securitySessionRecordLog);
         } catch (Exception e) {
@@ -123,7 +121,7 @@ public class TransFormUtils {
      * 解析日志，并补全
      * 补domain,补subscriber_id
      *
-     * @param message Security原始日志
+     * @param message CollectProtocol原始日志
      * @return 补全后的日志
      */
     public static String getCollectProtocolMessage(String message) {
@@ -139,7 +137,6 @@ public class TransFormUtils {
             collectProtocolRecordLog.setCommon_server_asn(ipLookup.asnLookup(serverIp, true));
             //TODO 集成AAA数据subscribe_id -数据端补全
             collectProtocolRecordLog.setCommon_subscriber_id(HbaseUtils.getAccount(clientIp));
-//            securitySessionRecordLog.setCommon_subscriber_id("aaaaa");
             collectProtocolRecordLog.setHttp_domain(getTopDomain(collectProtocolRecordLog.getSsl_sni(), collectProtocolRecordLog.getHttp_host()));
             return JSONObject.toJSONString(collectProtocolRecordLog);
         } catch (Exception e) {

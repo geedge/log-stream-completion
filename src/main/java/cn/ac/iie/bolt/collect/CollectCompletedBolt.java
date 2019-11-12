@@ -1,4 +1,4 @@
-package cn.ac.iie.bolt.collectprotocol;
+package cn.ac.iie.bolt.collect;
 
 import cn.ac.iie.common.FlowWriteConfig;
 import cn.ac.iie.utils.system.TupleUtils;

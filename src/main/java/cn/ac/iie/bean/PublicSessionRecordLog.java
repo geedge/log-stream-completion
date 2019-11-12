@@ -8,7 +8,7 @@ package cn.ac.iie.bean;
  */
 public class PublicSessionRecordLog {
 
-//TODO 基础属性   40     int22
+//TODO 基础属性   41     int22
 
     private int common_service;
     private int common_direction;
