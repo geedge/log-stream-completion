@@ -1,7 +1,12 @@
 package cn.ac.iie.bean;
-import com.alibaba.fastjson.annotation.JSONField;
-import com.alibaba.fastjson.support.spring.annotation.FastJsonFilter;
-public class RadiusSessionRecordLog extends PublicSessionRecordLog{
+
+
+/**
+ * Radius 日志
+ *
+ * @author qidaijie
+ */
+public class RadiusSessionRecordLog extends PublicSessionRecordLog {
 
 
 //TODO RADIUS协议属性  4

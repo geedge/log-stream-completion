@@ -1,9 +1,8 @@
 package cn.ac.iie.topology;
 
 
-import cn.ac.iie.bean.CollectProtocolRecordLog;
 import cn.ac.iie.bolt.NtcLogSendBolt;
-import cn.ac.iie.bolt.collectProtocol.CollectCompletedBolt;
+import cn.ac.iie.bolt.collectprotocol.CollectCompletedBolt;
 import cn.ac.iie.bolt.radius.RadiusCompletionBolt;
 import cn.ac.iie.bolt.security.SecurityCompletionBolt;
 
@@ -64,9 +63,7 @@ public class LogFlowWriteTopology {
         builder = new TopologyBuilder();
         builder.setSpout("LogFlowWriteSpout", new CustomizedKafkaSpout(), FlowWriteConfig.SPOUT_PARALLELISM);
 
-        String topic_name = FlowWriteConfig.KAFKA_TOPIC;
-
-        switch(topic_name){
+        switch (FlowWriteConfig.KAFKA_TOPIC) {
             case "PROXY-POLICY-LOG":
                 builder.setBolt("ProxyCompletionBolt", new ProxyCompletionBolt(), FlowWriteConfig.DATACENTER_BOLT_PARALLELISM).localOrShuffleGrouping("LogFlowWriteSpout");
                 builder.setBolt("NtcLogSendBolt", new NtcLogSendBolt(), FlowWriteConfig.KAFKA_BOLT_PARALLELISM).localOrShuffleGrouping("ProxyCompletionBolt");
@@ -87,21 +84,10 @@ public class LogFlowWriteTopology {
                 builder.setBolt("NtcLogSendBolt", new NtcLogSendBolt(), FlowWriteConfig.KAFKA_BOLT_PARALLELISM).localOrShuffleGrouping("SecurityCompletionBolt");
                 break;
 
-
-            }
-
-            /*if ("PROXY_POLICY_LOG".equals(FlowWriteConfig.KAFKA_TOPIC) || "COLLECT_HTTP_META_LOG".equals(FlowWriteConfig.KAFKA_TOPIC)) {
-                builder.setBolt("HttpCompletionBolt", new HttpCompletionBolt(), FlowWriteConfig.DATACENTER_BOLT_PARALLELISM).localOrShuffleGrouping("LogFlowWriteSpout");
-                builder.setBolt("NtcLogSendBolt", new NtcLogSendBolt(), FlowWriteConfig.KAFKA_BOLT_PARALLELISM).localOrShuffleGrouping("HttpCompletionBolt");
-            } else if ("COLLECT_RADIUS_RECORD_LOG".equals(FlowWriteConfig.KAFKA_TOPIC)) {
-                builder.setBolt("RadiusCompletionBolt", new ConnCompletionBolt(), FlowWriteConfig.DATACENTER_BOLT_PARALLELISM).localOrShuffleGrouping("LogFlowWriteSpout");
-                builder.setBolt("NtcLogSendBolt", new NtcLogSendBolt(), FlowWriteConfig.KAFKA_BOLT_PARALLELISM).localOrShuffleGrouping("RadiusCompletionBolt");
-            } else {
-                builder.setBolt("ConnCompletionBolt", new ConnCompletionBolt(), FlowWriteConfig.DATACENTER_BOLT_PARALLELISM).localOrShuffleGrouping("LogFlowWriteSpout");
-                builder.setBolt("NtcLogSendBolt", new NtcLogSendBolt(), FlowWriteConfig.KAFKA_BOLT_PARALLELISM).localOrShuffleGrouping("ConnCompletionBolt");
-            }*/
-//        builder.setBolt("SummaryBolt", new SummaryBolt(), 1).localOrShuffleGrouping("NtcLogSendBolt");
+            default:
         }
+
+    }
 
     public static void main(String[] args) throws Exception {
         LogFlowWriteTopology csst = null;

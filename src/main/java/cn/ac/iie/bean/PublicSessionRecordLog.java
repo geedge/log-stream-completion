@@ -1,11 +1,15 @@
 package cn.ac.iie.bean;
 
-import com.alibaba.fastjson.annotation.JSONField;
-import com.alibaba.fastjson.support.spring.annotation.FastJsonFilter;
 
+/**
+ * 公共类
+ *
+ * @author qidaijie
+ */
 public class PublicSessionRecordLog {
 
 //TODO 基础属性   40     int22
+
     private int common_service;
     private int common_direction;
     private long common_recv_time;

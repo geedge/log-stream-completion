@@ -23,10 +23,11 @@ import static cn.ac.iie.utils.general.TransFormUtils.getSecurityMessage;
  *
  * @author qidaijie
  */
-@SuppressWarnings("all")
+
 public class SecurityCompletionBolt extends BaseBasicBolt {
-    private static final long serialVersionUID = -1059151770138464874L;
+
     private final static Logger logger = Logger.getLogger(SecurityCompletionBolt.class);
+    private static final long serialVersionUID = -2380858260054733989L;
 
     @Override
     public void prepare(Map stormConf, TopologyContext context) {
@@ -38,14 +39,15 @@ public class SecurityCompletionBolt extends BaseBasicBolt {
         try {
             if (TupleUtils.isTick(tuple)) {
                 HbaseUtils.change();
-            }else {
+            } else {
                 String message = tuple.getString(0);
                 if (StringUtil.isNotBlank(message)) {
                     basicOutputCollector.emit(new Values(getSecurityMessage(message)));
                 }
             }
         } catch (Exception e) {
-            logger.error("接收解析过程出现异常", e);
+            logger.error(FlowWriteConfig.KAFKA_TOPIC + "接收/解析过程出现异常");
+            e.printStackTrace();
         }
     }
 
@@ -53,7 +55,7 @@ public class SecurityCompletionBolt extends BaseBasicBolt {
     public Map<String, Object> getComponentConfiguration() {
         Map<String, Object> conf = new HashMap<String, Object>(16);
         conf.put(org.apache.storm.Config.TOPOLOGY_TICK_TUPLE_FREQ_SECS,
-                FlowWriteConfig.TOPOLOGY_TICK_TUPLE_FREQ_SECS);
+                FlowWriteConfig.HBASE_TICK_TUPLE_FREQ_SECS);
         return conf;
     }
 

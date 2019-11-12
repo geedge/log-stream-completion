@@ -24,11 +24,11 @@ import java.util.Map;
  * @date 2018/8/14
  */
 public class NtcLogSendBolt extends BaseBasicBolt {
-    private static final long serialVersionUID = 3940515789830317517L;
+    private static final long serialVersionUID = -3663610927224396615L;
     private static Logger logger = Logger.getLogger(NtcLogSendBolt.class);
     private List<String> list;
     private KafkaLogNtc kafkaLogNtc;
-    private static long successfulSum = 0;
+//    private static long successfulSum = 0;
 
 
     @Override
@@ -43,11 +43,11 @@ public class NtcLogSendBolt extends BaseBasicBolt {
             if (TupleUtils.isTick(tuple)) {
                 if (list.size() != 0) {
                     kafkaLogNtc.sendMessage(list);
-                    successfulSum += list.size();
+//                    successfulSum += list.size();
                     list.clear();
                 }
-                basicOutputCollector.emit(new Values(successfulSum));
-                successfulSum = 0L;
+//                basicOutputCollector.emit(new Values(successfulSum));
+//                successfulSum = 0L;
             } else {
                 String message = tuple.getString(0);
                 if (StringUtil.isNotBlank(message)) {
@@ -55,12 +55,12 @@ public class NtcLogSendBolt extends BaseBasicBolt {
                 }
                 if (list.size() == FlowWriteConfig.BATCH_INSERT_NUM) {
                     kafkaLogNtc.sendMessage(list);
-                    successfulSum += list.size();
+//                    successfulSum += list.size();
                     list.clear();
                 }
             }
         } catch (Exception e) {
-            logger.error("日志发送Kafka过程出现异常");
+            logger.error(FlowWriteConfig.KAFKA_TOPIC + "日志发送Kafka过程出现异常");
             e.printStackTrace();
         }
     }
@@ -74,7 +74,7 @@ public class NtcLogSendBolt extends BaseBasicBolt {
 
     @Override
     public void declareOutputFields(OutputFieldsDeclarer outputFieldsDeclarer) {
-        outputFieldsDeclarer.declare(new Fields("suc"));
+//        outputFieldsDeclarer.declare(new Fields("suc"));
     }
 
 }

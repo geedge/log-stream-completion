@@ -1,6 +1,11 @@
 package cn.ac.iie.bean;
 
-public class SecurityPolicyLog extends PublicSessionRecordLog{
+/**
+ * 策略
+ *
+ * @author qidaijie
+ */
+public class SecurityPolicyLog extends PublicSessionRecordLog {
 
 
 //TODO HTTP协议属性  21
@@ -77,23 +82,23 @@ public class SecurityPolicyLog extends PublicSessionRecordLog{
     private String ssl_client_side_version;
     private String ssl_error;
 
-//TODO FTP协议属性  2
+    //TODO FTP协议属性  2
     private String ftp_url;
     private String ftp_content;
 
 
-//TODO BGP协议属性  3
+    //TODO BGP协议属性  3
     private int bgp_type;
     private String bgp_as_num;
     private String bgp_route;
 
-//TODO VOIP协议属性  4
+    //TODO VOIP协议属性  4
     private String voip_calling_account;
     private String voip_called_account;
     private String voip_calling_number;
     private String voip_called_number;
 
-//TODO STREAMING_MEDIA协议属性  2
+    //TODO STREAMING_MEDIA协议属性  2
     private String streaming_media_url;
     private String streaming_media_protocol;
 

@@ -1,6 +1,10 @@
 package cn.ac.iie.bean;
-import com.alibaba.fastjson.annotation.JSONField;
-import com.alibaba.fastjson.support.spring.annotation.FastJsonFilter;
+
+
+
+/**
+ * @author qidaijie
+ */
 public class ProxySessionRecordLog extends PublicSessionRecordLog{
 
 
