@@ -1,7 +1,6 @@
-package cn.ac.iie.bolt;
+package cn.ac.iie.bolt.proxy;
 
 import cn.ac.iie.common.FlowWriteConfig;
-import cn.ac.iie.utils.hbase.HbaseUtils;
 import cn.ac.iie.utils.system.TupleUtils;
 import com.zdjizhi.utils.StringUtil;
 import org.apache.log4j.Logger;
@@ -16,16 +15,18 @@ import org.apache.storm.tuple.Values;
 import java.util.HashMap;
 import java.util.Map;
 
-import static cn.ac.iie.utils.general.TransFormUtils.getJsonMessage;
+import static cn.ac.iie.utils.general.TransFormUtils.getProxyMessage;
+import static cn.ac.iie.utils.hbase.HbaseUtils.change;
 
 /**
  * 通联关系日志补全
  *
  * @author qidaijie
  */
-public class ConnCompletionBolt extends BaseBasicBolt {
-    private static final long serialVersionUID = -1059151670138465894L;
-    private final static Logger logger = Logger.getLogger(ConnCompletionBolt.class);
+@SuppressWarnings("all")
+public class ProxyCompletionBolt extends BaseBasicBolt {
+    private static final long serialVersionUID = -1059151670838465894L;
+    private final static Logger logger = Logger.getLogger(ProxyCompletionBolt.class);
 
     @Override
     public void prepare(Map stormConf, TopologyContext context) {
@@ -36,14 +37,13 @@ public class ConnCompletionBolt extends BaseBasicBolt {
     public void execute(Tuple tuple, BasicOutputCollector basicOutputCollector) {
         try {
             if (TupleUtils.isTick(tuple)) {
-//                HbaseUtils.change();
-            } else {
+                change();
+            }else {
                 String message = tuple.getString(0);
                 if (StringUtil.isNotBlank(message)) {
-                    basicOutputCollector.emit(new Values(getJsonMessage(message)));
+                    basicOutputCollector.emit(new Values(getProxyMessage(message)));
                 }
             }
-
         } catch (Exception e) {
             logger.error("接收解析过程出现异常", e);
         }

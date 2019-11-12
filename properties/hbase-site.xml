@@ -31,13 +31,13 @@
   </property>
   <property>
       <name>hbase.zookeeper.quorum</name>
-      <value>192.168.40.202,192.168.40.203,192.168.40.206</value>
+      <value>master,slave1,slave2</value>
   </property>
 <property> 
 <name>hbase.master.info.port</name> 
 <value>60010</value> 
 </property> 
-<!-- 开启启schema支持    对应hbase的namespace -->
+#开启schema支持    对应hbase的namespace
 <property>
    <name>phoenix.schema.isNamespaceMappingEnabled</name>
    <value>true</value>
@@ -46,36 +46,4 @@
   <name>phoenix.schema.mapSystemTablesToNamespace</name>
   <value>true</value>
 </property>
-<property>
-    <name>hbase.client.keyvalue.maxsize</name>
-    <value>99428800</value>
-  </property>
-  <property>
-    <name>hbase.server.keyvalue.maxsize</name>
-    <value>99428800</value>
-</property>
-    <property>
-        <name>hbase.regionserver.wal.codec</name>
-        <value>org.apache.hadoop.hbase.regionserver.wal.IndexedWALEditCodec</value>
-    </property>
-    <property>
-        <name>phoenix.query.timeoutMs</name>
-        <value>1800000</value>
-    </property>
-    <property>
-        <name>hbase.regionserver.lease.period</name>
-        <value>1200000</value>
-    </property>
-    <property>
-        <name>hbase.rpc.timeout</name>
-        <value>1200000</value>
-    </property>
-    <property>
-        <name>hbase.client.scanner.caching</name>
-        <value>1000</value>
-    </property>
-    <property>
-        <name>hbase.client.scanner.timeout.period</name>
-        <value>1200000</value>
-    </property>
 </configuration>

@@ -18,26 +18,27 @@ import java.util.Map;
 /**
  * @author qidaijie
  */
+@SuppressWarnings("all")
 public class HbaseUtils {
     private final static Logger logger = Logger.getLogger(HbaseUtils.class);
     private static Map<String, String> subIdMap = new HashMap<>(16);
     private static Connection connection;
     private static Long time;
 
-//    static {
-//        // 管理Hbase的配置信息
-//        Configuration configuration = HBaseConfiguration.create();
-//        // 设置zookeeper节点
-//        configuration.set("hbase.zookeeper.quorum", FlowWriteConfig.HBASE_ZOOKEEPER_SERVERS);
-//        try {
-//            connection = ConnectionFactory.createConnection(configuration);
-//            time = System.currentTimeMillis();
-//            getAll();
-//        } catch (IOException e) {
-//            logger.error("获取HBase连接失败");
-//            e.printStackTrace();
-//        }
-//    }
+    static {
+        // 管理Hbase的配置信息
+        Configuration configuration = HBaseConfiguration.create();
+        // 设置zookeeper节点
+        configuration.set("hbase.zookeeper.quorum", FlowWriteConfig.HBASE_ZOOKEEPER_SERVERS);
+        try {
+            connection = ConnectionFactory.createConnection(configuration);
+            time = System.currentTimeMillis();
+            getAll();
+        } catch (IOException e) {
+            logger.error("获取HBase连接失败");
+            e.printStackTrace();
+        }
+    }
 
     /**
      * 更新变量

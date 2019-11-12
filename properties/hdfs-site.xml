@@ -31,7 +31,7 @@
     </property>
     <property>
         <name>dfs.namenode.secondary.http-address</name>
-        <value>192.168.40.202:9001</value>
+        <value>master:9001</value>
     </property>
     <property>
 		<name>dfs.webhdfs.enabled</name>
@@ -60,27 +60,27 @@
     <!-- nn1的RPC通信地址，nn1所在地址  -->  
     <property>  
         <name>dfs.namenode.rpc-address.ns1.nn1</name>  
-        <value>192.168.40.202:9000</value>
+        <value>master:9000</value>  
     </property>  
     <!-- nn1的http通信地址，外部访问地址 -->  
     <property>  
         <name>dfs.namenode.http-address.ns1.nn1</name>  
-        <value>192.168.40.202:50070</value>
+        <value>master:50070</value>  
     </property>  
     <!-- nn2的RPC通信地址，nn2所在地址 -->  
     <property>  
         <name>dfs.namenode.rpc-address.ns1.nn2</name>  
-        <value>192.168.40.203:9000</value>
+        <value>slave1:9000</value>  
     </property>  
     <!-- nn2的http通信地址，外部访问地址 -->  
     <property>  
         <name>dfs.namenode.http-address.ns1.nn2</name>  
-        <value>192.168.40.203:50070</value>
+        <value>slave1:50070</value>  
     </property>  
     <!-- 指定NameNode的元数据在JournalNode日志上的存放位置(一般和zookeeper部署在一起) -->  
     <property>  
         <name>dfs.namenode.shared.edits.dir</name>  
-        <value>qjournal://192.168.40.203:8485;192.168.40.206:8485;192.168.40.202:8485/ns1</value>
+        <value>qjournal://slave1:8485;slave2:8485;master:8485/ns1</value>  
     </property>  
     <!-- 指定JournalNode在本地磁盘存放数据的位置 -->  
     <property>  
