@@ -1,4 +1,4 @@
-package cn.ac.iie.bolt.collectProtocol;
+package cn.ac.iie.bolt.collectprotocol;
 
 import cn.ac.iie.common.FlowWriteConfig;
 import cn.ac.iie.utils.system.TupleUtils;
@@ -23,10 +23,10 @@ import static cn.ac.iie.utils.hbase.HbaseUtils.change;
  *
  * @author qidaijie
  */
-@SuppressWarnings("all")
+
 public class CollectCompletedBolt extends BaseBasicBolt {
-    private static final long serialVersionUID = -105915167013846589L;
     private final static Logger logger = Logger.getLogger(CollectCompletedBolt.class);
+    private static final long serialVersionUID = 4682827168247333522L;
 
     @Override
     public void prepare(Map stormConf, TopologyContext context) {
@@ -38,14 +38,15 @@ public class CollectCompletedBolt extends BaseBasicBolt {
         try {
             if (TupleUtils.isTick(tuple)) {
                 change();
-            }else {
+            } else {
                 String message = tuple.getString(0);
                 if (StringUtil.isNotBlank(message)) {
                     basicOutputCollector.emit(new Values(getCollectProtocolMessage(message)));
                 }
             }
         } catch (Exception e) {
-            logger.error("接收解析过程出现异常", e);
+            logger.error(FlowWriteConfig.KAFKA_TOPIC + "接收/解析过程出现异常");
+            e.printStackTrace();
         }
     }
 
@@ -53,7 +54,7 @@ public class CollectCompletedBolt extends BaseBasicBolt {
     public Map<String, Object> getComponentConfiguration() {
         Map<String, Object> conf = new HashMap<String, Object>(16);
         conf.put(org.apache.storm.Config.TOPOLOGY_TICK_TUPLE_FREQ_SECS,
-                FlowWriteConfig.TOPOLOGY_TICK_TUPLE_FREQ_SECS);
+                FlowWriteConfig.HBASE_TICK_TUPLE_FREQ_SECS);
         return conf;
     }
 
