@@ -1,7 +1,7 @@
 package cn.ac.iie.bean;
 
 /**
- * 除radius之外
+ * 除radius之外，通联日志类
  *
  * @author qidaijie
  */

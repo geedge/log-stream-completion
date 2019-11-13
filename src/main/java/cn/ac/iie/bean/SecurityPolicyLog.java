@@ -1,7 +1,7 @@
 package cn.ac.iie.bean;
 
 /**
- * 策略
+ * 安全策略
  *
  * @author qidaijie
  */
