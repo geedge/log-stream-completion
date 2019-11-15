@@ -1,8 +1,11 @@
 package cn.ac.iie.utils.general;
 
-import cn.ac.iie.bean.*;
+import cn.ac.iie.bean.connection.ConnectionRecordLog;
+import cn.ac.iie.bean.proxy.ProxySessionRecordLog;
+import cn.ac.iie.bean.radius.RadiusSessionRecordLog;
+import cn.ac.iie.bean.security.SecurityPolicyLog;
 import cn.ac.iie.common.FlowWriteConfig;
-import cn.ac.iie.utils.hbase.HbaseUtils;
+import cn.ac.iie.utils.hbase.HBaseUtils;
 import cn.ac.iie.utils.system.SnowflakeId;
 import com.alibaba.fastjson.JSONObject;
 import com.zdjizhi.utils.IpLookup;
@@ -77,7 +80,7 @@ public class TransFormUtils {
             proxySessionRecordLog.setCommon_client_asn(ipLookup.asnLookup(clientIp, true));
             proxySessionRecordLog.setCommon_server_asn(ipLookup.asnLookup(serverIp, true));
             //TODO 集成AAA数据subscribe_id -数据端补全
-            proxySessionRecordLog.setCommon_subscriber_id(HbaseUtils.getAccount(clientIp));
+            proxySessionRecordLog.setCommon_subscriber_id(HBaseUtils.getAccount(clientIp));
             proxySessionRecordLog.setHttp_domain(getTopDomain(null, proxySessionRecordLog.getHttp_host()));
             return JSONObject.toJSONString(proxySessionRecordLog);
         } catch (Exception e) {
@@ -107,7 +110,7 @@ public class TransFormUtils {
             securitySessionRecordLog.setCommon_client_asn(ipLookup.asnLookup(clientIp, true));
             securitySessionRecordLog.setCommon_server_asn(ipLookup.asnLookup(serverIp, true));
             //TODO 集成AAA数据subscribe_id -数据端补全
-            securitySessionRecordLog.setCommon_subscriber_id(HbaseUtils.getAccount(clientIp));
+            securitySessionRecordLog.setCommon_subscriber_id(HBaseUtils.getAccount(clientIp));
             securitySessionRecordLog.setHttp_domain(getTopDomain(securitySessionRecordLog.getSsl_sni(), securitySessionRecordLog.getHttp_host()));
             return JSONObject.toJSONString(securitySessionRecordLog);
         } catch (Exception e) {
@@ -125,7 +128,7 @@ public class TransFormUtils {
      * @return 补全后的日志
      */
     public static String getCollectProtocolMessage(String message) {
-        CollectProtocolRecordLog collectProtocolRecordLog = JSONObject.parseObject(message, CollectProtocolRecordLog.class);
+        ConnectionRecordLog collectProtocolRecordLog = JSONObject.parseObject(message, ConnectionRecordLog.class);
         String serverIp = collectProtocolRecordLog.getCommon_server_ip();
         String clientIp = collectProtocolRecordLog.getCommon_client_ip();
         try {
@@ -136,7 +139,7 @@ public class TransFormUtils {
             collectProtocolRecordLog.setCommon_client_asn(ipLookup.asnLookup(clientIp, true));
             collectProtocolRecordLog.setCommon_server_asn(ipLookup.asnLookup(serverIp, true));
             //TODO 集成AAA数据subscribe_id -数据端补全
-            collectProtocolRecordLog.setCommon_subscriber_id(HbaseUtils.getAccount(clientIp));
+            collectProtocolRecordLog.setCommon_subscriber_id(HBaseUtils.getAccount(clientIp));
             collectProtocolRecordLog.setHttp_domain(getTopDomain(collectProtocolRecordLog.getSsl_sni(), collectProtocolRecordLog.getHttp_host()));
             return JSONObject.toJSONString(collectProtocolRecordLog);
         } catch (Exception e) {
@@ -152,7 +155,7 @@ public class TransFormUtils {
      * @param host host
      * @return 顶级域名
      */
-    public static String getTopDomain(String sni, String host) {
+    private static String getTopDomain(String sni, String host) {
         if (StringUtil.isNotBlank(sni)) {
             return getDomain(sni);
         } else if (StringUtil.isNotBlank(host)) {
@@ -179,11 +182,6 @@ public class TransFormUtils {
             e.printStackTrace();
         }
         return "";
-    }
-
-    public static void main(String[] args) {
-        String s = ipLookup.cityLookupDetail("2001:470:19:790::24");
-        System.out.println(s);
     }
 
 

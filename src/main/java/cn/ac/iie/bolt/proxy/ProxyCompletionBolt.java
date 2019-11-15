@@ -16,7 +16,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static cn.ac.iie.utils.general.TransFormUtils.getProxyMessage;
-import static cn.ac.iie.utils.hbase.HbaseUtils.change;
+import static cn.ac.iie.utils.hbase.HBaseUtils.change;
 
 /**
  * 通联关系日志补全

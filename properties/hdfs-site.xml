@@ -17,13 +17,13 @@
 <!-- Put site-specific property overrides in this file. -->
 
 <configuration>
-	<property>
+    <property>
         <name>dfs.namenode.name.dir</name>
-        <value>file:/home/bigdata/hadoop/dfs/name</value>
+        <value>file:/home/ceiec/hadoop/dfs/name</value>
     </property>
     <property>
         <name>dfs.datanode.data.dir</name>
-        <value>file:/home/bigdata/hadoop/dfs/data</value>
+        <value>file:/home/ceiec/hadoop/dfs/data</value>
     </property>
     <property>
         <name>dfs.replication</name>
@@ -31,11 +31,11 @@
     </property>
     <property>
         <name>dfs.namenode.secondary.http-address</name>
-        <value>master:9001</value>
+        <value>192.168.40.119:9001</value>
     </property>
     <property>
-		<name>dfs.webhdfs.enabled</name>
-		<value>true</value>
+	<name>dfs.webhdfs.enabled</name>
+	<value>true</value>
     </property>
     <property>
         <name>dfs.permissions</name>
@@ -60,32 +60,32 @@
     <!-- nn1的RPC通信地址，nn1所在地址  -->  
     <property>  
         <name>dfs.namenode.rpc-address.ns1.nn1</name>  
-        <value>master:9000</value>  
+        <value>192.168.40.119:8020</value>  
     </property>  
     <!-- nn1的http通信地址，外部访问地址 -->  
     <property>  
         <name>dfs.namenode.http-address.ns1.nn1</name>  
-        <value>master:50070</value>  
+        <value>192.168.40.119:50070</value>  
     </property>  
     <!-- nn2的RPC通信地址，nn2所在地址 -->  
     <property>  
         <name>dfs.namenode.rpc-address.ns1.nn2</name>  
-        <value>slave1:9000</value>  
+        <value>192.168.40.122:8020</value>  
     </property>  
     <!-- nn2的http通信地址，外部访问地址 -->  
     <property>  
         <name>dfs.namenode.http-address.ns1.nn2</name>  
-        <value>slave1:50070</value>  
+        <value>192.168.40.122:50070</value>  
     </property>  
     <!-- 指定NameNode的元数据在JournalNode日志上的存放位置(一般和zookeeper部署在一起) -->  
     <property>  
         <name>dfs.namenode.shared.edits.dir</name>  
-        <value>qjournal://slave1:8485;slave2:8485;master:8485/ns1</value>  
+        <value>qjournal://192.168.40.119:8485;192.168.40.122:8485;192.168.40.123:8485/ns1</value>  
     </property>  
     <!-- 指定JournalNode在本地磁盘存放数据的位置 -->  
     <property>  
         <name>dfs.journalnode.edits.dir</name>  
-        <value>/home/bigdata/hadoop/journal</value>  
+        <value>/home/ceiec/hadoop/journal</value>  
     </property>  
     <!--客户端通过代理访问namenode，访问文件系统，HDFS 客户端与Active 节点通信的Java 类，使用其确定Active 节点是否活跃  -->  
     <property>  

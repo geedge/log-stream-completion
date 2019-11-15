@@ -1,7 +1,7 @@
 package cn.ac.iie.bolt.security;
 
 import cn.ac.iie.common.FlowWriteConfig;
-import cn.ac.iie.utils.hbase.HbaseUtils;
+import cn.ac.iie.utils.hbase.HBaseUtils;
 import cn.ac.iie.utils.system.TupleUtils;
 import com.zdjizhi.utils.StringUtil;
 import org.apache.log4j.Logger;
@@ -38,7 +38,7 @@ public class SecurityCompletionBolt extends BaseBasicBolt {
     public void execute(Tuple tuple, BasicOutputCollector basicOutputCollector) {
         try {
             if (TupleUtils.isTick(tuple)) {
-                HbaseUtils.change();
+                HBaseUtils.change();
             } else {
                 String message = tuple.getString(0);
                 if (StringUtil.isNotBlank(message)) {
