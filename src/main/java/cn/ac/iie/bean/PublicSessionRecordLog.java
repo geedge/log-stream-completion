@@ -52,7 +52,7 @@ public class PublicSessionRecordLog {
     private String common_app_label;
     private String common_address_list;
     private String common_stream_error;
-    private String common_stream_trace_id;
+    private long common_stream_trace_id;
 
     public int getCommon_service() {
         return common_service;
@@ -374,11 +374,11 @@ public class PublicSessionRecordLog {
         this.common_stream_error = common_stream_error;
     }
 
-    public String getCommon_stream_trace_id() {
+    public long getCommon_stream_trace_id() {
         return common_stream_trace_id;
     }
 
-    public void setCommon_stream_trace_id(String common_stream_trace_id) {
+    public void setCommon_stream_trace_id(long common_stream_trace_id) {
         this.common_stream_trace_id = common_stream_trace_id;
     }
 }
