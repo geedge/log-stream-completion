@@ -16,12 +16,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * HBase 工具类
+ *
  * @author qidaijie
  */
-@SuppressWarnings("all")
-public class HbaseUtils {
-    private final static Logger logger = Logger.getLogger(HbaseUtils.class);
-    private static Map<String, String> subIdMap = new HashMap<>(16);
+
+public class HBaseUtils {
+    private final static Logger logger = Logger.getLogger(HBaseUtils.class);
+    private static Map<String, String> subIdMap = new HashMap<>(32);
     private static Connection connection;
     private static Long time;
 
@@ -55,29 +57,30 @@ public class HbaseUtils {
      * @param endTime   结束时间
      */
     private static void timestampsFilter(Long startTime, Long endTime) {
+        Long begin = System.currentTimeMillis();
         Table table = null;
-        TableName tableName = TableName.valueOf("sub:" + FlowWriteConfig.HBASE_TABLE_NAME);
-        Admin admin = null;
+        ResultScanner scanner = null;
+        Scan scan2 = new Scan();
         try {
             table = connection.getTable(TableName.valueOf("sub:" + FlowWriteConfig.HBASE_TABLE_NAME));
-            Scan scan2 = new Scan();
             scan2.setTimeRange(startTime, endTime);
-            ResultScanner scanner = table.getScanner(scan2);
+            scanner = table.getScanner(scan2);
+            logger.warn("读取HBase变量耗时：" + (System.currentTimeMillis() - begin));
             for (Result result : scanner) {
                 Cell[] cells = result.rawCells();
                 for (Cell cell : cells) {
                     subIdMap.put(Bytes.toString(CellUtil.cloneRow(cell)), Bytes.toString(CellUtil.cloneValue(cell)));
                 }
             }
-            admin = connection.getAdmin();
-            admin.flush(tableName);
             logger.warn("当前集合长度" + subIdMap.keySet().size());
-            logger.warn("更新后集合keys：" + subIdMap.keySet());
+            logger.warn("更新缓存耗时：" + (System.currentTimeMillis() - begin));
             time = endTime;
-            scanner.close();
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
+            if (scanner != null) {
+                scanner.close();
+            }
             if (table != null) {
                 try {
                     table.close();
@@ -92,6 +95,7 @@ public class HbaseUtils {
      * 获取所有的 key value
      */
     private static void getAll() {
+        Long begin = System.currentTimeMillis();
         try {
             Table table = connection.getTable(TableName.valueOf("sub:" + FlowWriteConfig.HBASE_TABLE_NAME));
             Scan scan2 = new Scan();
@@ -102,18 +106,20 @@ public class HbaseUtils {
                     subIdMap.put(Bytes.toString(CellUtil.cloneRow(cell)), Bytes.toString(CellUtil.cloneValue(cell)));
                 }
             }
-            logger.warn("获取全量后集合keys：" + subIdMap.keySet());
+            logger.warn("获取全量后集合长度：" + subIdMap.size());
+            logger.warn("获取全量耗时：" + (System.currentTimeMillis() - begin));
             scanner.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
+
     /**
      * 获取 account
      *
-     * @param ip
-     * @return
+     * @param ip client_ip
+     * @return account
      */
     public static String getAccount(String ip) {
         if (StringUtil.isNotBlank(ip)) {

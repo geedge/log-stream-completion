@@ -1,6 +1,7 @@
 package cn.ac.iie.bolt.collect;
 
 import cn.ac.iie.common.FlowWriteConfig;
+import cn.ac.iie.utils.hbase.HBaseUtils;
 import cn.ac.iie.utils.system.TupleUtils;
 import com.zdjizhi.utils.StringUtil;
 import org.apache.log4j.Logger;
@@ -16,21 +17,19 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static cn.ac.iie.utils.general.TransFormUtils.getCollectProtocolMessage;
-import static cn.ac.iie.utils.hbase.HbaseUtils.change;
+import static cn.ac.iie.utils.hbase.HBaseUtils.change;
 
 /**
  * 通联关系日志补全
  *
  * @author qidaijie
  */
-
 public class CollectCompletedBolt extends BaseBasicBolt {
     private final static Logger logger = Logger.getLogger(CollectCompletedBolt.class);
     private static final long serialVersionUID = 4682827168247333522L;
 
     @Override
     public void prepare(Map stormConf, TopologyContext context) {
-
     }
 
     @Override
