@@ -48,16 +48,16 @@ public class HBaseTest {
 
     @Test
     public void change() {
-        Long begin = System.currentTimeMillis();
-        System.gc();
-        Long start = Runtime.getRuntime().freeMemory();
-        System.out.println("开始内存"+start);
-        getAll();
-        System.gc();
-        Long end = Runtime.getRuntime().freeMemory();
-        System.out.println("结束内存"+end);
-        System.out.println( "一个HashMap对象占内存: " + (end - start));
-        System.out.println(System.currentTimeMillis() - begin);
+//        Long begin = System.currentTimeMillis();
+//        System.gc();
+//        Long start = Runtime.getRuntime().freeMemory();
+//        System.out.println("开始内存"+start);
+//        getAll();
+//        System.gc();
+//        Long end = Runtime.getRuntime().freeMemory();
+//        System.out.println("结束内存"+end);
+//        System.out.println( "一个HashMap对象占内存: " + (end - start));
+//        System.out.println(System.currentTimeMillis() - begin);
     }
 
     /**

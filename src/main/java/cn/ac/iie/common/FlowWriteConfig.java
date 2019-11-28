@@ -10,7 +10,7 @@ public class FlowWriteConfig {
 
     public static final String LOG_STRING_SPLITTER = "\t";
     public static final String SQL_STRING_SPLITTER = "#";
-    public static final String SEGMENTATION = ",";
+    public static final String DOMAIN_SPLITTER = ".";
 
     /**
      * System

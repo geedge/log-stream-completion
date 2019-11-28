@@ -12,6 +12,9 @@ import com.zdjizhi.utils.IpLookup;
 import com.zdjizhi.utils.StringUtil;
 import org.apache.log4j.Logger;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -25,7 +28,10 @@ import java.util.regex.Pattern;
 
 public class TransFormUtils {
     private static Logger logger = Logger.getLogger(TransFormUtils.class);
-    private static Pattern WEB_PATTERN = Pattern.compile("[^\\\\.]+(\\.com\\.cn|\\.net\\.cn|\\.org\\.cn|\\.gov\\.cn|\\.com|\\.net|\\.cn|\\.org|\\.cc|\\.me|\\.tel|\\.mobi|\\.asia|\\.biz|\\.info|\\.name|\\.tv|\\.hk|\\.公司|\\.中国|\\.网络)");
+    private final static Set<String> PUBLIC_SUFFIX_SET = new HashSet<String>(
+            Arrays.asList("com|org|net|gov|edu|co|tv|mobi|info|asia|xxx|onion|cc|cn|com.cn|edu.cn|gov.cn|net.cn|org.cn|jp|kr|tw|com.hk|hk|com.hk|org.hk|se|com.se|org.se"
+                    .split("\\|")));
+    private static Pattern IP_PATTERN = Pattern.compile("(\\d{1,3}\\.){3}(\\d{1,3})");
     private static IpLookup ipLookup = new IpLookup.Builder(false)
             .loadDataFileV4(FlowWriteConfig.IP_LIBRARY + "Kazakhstan.mmdb")
             .loadDataFileV6(FlowWriteConfig.IP_LIBRARY + "Kazakhstan.mmdb")
@@ -156,10 +162,10 @@ public class TransFormUtils {
      * @return 顶级域名
      */
     private static String getTopDomain(String sni, String host) {
-        if (StringUtil.isNotBlank(sni)) {
-            return getDomain(sni);
-        } else if (StringUtil.isNotBlank(host)) {
-            return getDomain(host);
+        if (StringUtil.isNotBlank(host)) {
+            return getDomainName(host);
+        } else if (StringUtil.isNotBlank(sni)) {
+            return getDomainName(sni);
         } else {
             return "";
         }
@@ -169,19 +175,27 @@ public class TransFormUtils {
     /**
      * 根据url截取顶级域名
      *
-     * @param url 网站url
+     * @param host 网站url
      * @return 顶级域名
      */
-    private static String getDomain(String url) {
-        try {
-            Matcher matcher = WEB_PATTERN.matcher(url);
-            if (matcher.find()) {
-                return matcher.group();
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
+    private static String getDomainName(String host) {
+        if (host.endsWith(FlowWriteConfig.DOMAIN_SPLITTER)) {
+            host = host.substring(0, host.length() - 1);
         }
-        return "";
+        if (IP_PATTERN.matcher(host).matches()) {
+            return host;
+        }
+        int index = 0;
+        String candidate = host;
+        for (; index >= 0; ) {
+            index = candidate.indexOf(FlowWriteConfig.DOMAIN_SPLITTER);
+            String subCandidate = candidate.substring(index + 1);
+            if (PUBLIC_SUFFIX_SET.contains(subCandidate)) {
+                return candidate;
+            }
+            candidate = subCandidate;
+        }
+        return candidate;
     }
 
 
