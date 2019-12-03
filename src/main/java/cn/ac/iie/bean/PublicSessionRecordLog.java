@@ -41,6 +41,7 @@ public class PublicSessionRecordLog {
     private String common_user_region;
     private String common_client_ip;
     private String common_device_id;
+    private String common_sub_action;
     private String common_isp;
     private String common_sled_ip;
     private String common_client_location;
@@ -380,5 +381,13 @@ public class PublicSessionRecordLog {
 
     public void setCommon_stream_trace_id(long common_stream_trace_id) {
         this.common_stream_trace_id = common_stream_trace_id;
+    }
+
+    public String getCommon_sub_action() {
+        return common_sub_action;
+    }
+
+    public void setCommon_sub_action(String common_sub_action) {
+        this.common_sub_action = common_sub_action;
     }
 }

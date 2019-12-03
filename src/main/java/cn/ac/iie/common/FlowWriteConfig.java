@@ -8,10 +8,9 @@ import cn.ac.iie.utils.system.FlowWriteConfigurations;
  */
 public class FlowWriteConfig {
 
-    public static final String LOG_STRING_SPLITTER = "\t";
-    public static final String SQL_STRING_SPLITTER = "#";
+    public static final int IPV4_TYPE = 1;
+    public static final int IPV6_TYPE = 2;
     public static final String DOMAIN_SPLITTER = ".";
-
     /**
      * System
      */

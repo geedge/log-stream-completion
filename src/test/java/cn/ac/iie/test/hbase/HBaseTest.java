@@ -2,7 +2,9 @@ package cn.ac.iie.test.hbase;
 
 import cn.ac.iie.common.FlowWriteConfig;
 import cn.ac.iie.utils.hbase.HBaseUtils;
+import cn.ac.iie.utils.system.IpUtils;
 import com.zdjizhi.utils.StringUtil;
+import io.netty.util.collection.IntObjectHashMap;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.Cell;
 import org.apache.hadoop.hbase.CellUtil;
@@ -17,10 +19,13 @@ import org.junit.Test;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 public class HBaseTest {
     private final static Logger logger = Logger.getLogger(HBaseTest.class);
-    private static Map<String, String> subIdMap = new HashMap<>(16);
+//    private static Map<Integer, String> subIdMap = new ConcurrentHashMap<Integer, String>(13333334);
+    private static Map<String, String> subIdMap = new HashMap<>(13333334);
     private static Connection connection;
     private static Long time;
 
@@ -29,9 +34,11 @@ public class HBaseTest {
         // 管理Hbase的配置信息
         Configuration configuration = HBaseConfiguration.create();
         // 设置zookeeper节点
-        configuration.set("hbase.zookeeper.quorum", FlowWriteConfig.HBASE_ZOOKEEPER_SERVERS);
 //        configuration.set("hbase.zookeeper.quorum", FlowWriteConfig.HBASE_ZOOKEEPER_SERVERS);
-//        configuration.setInt("zookeeper.session.timeout", 2000);
+        configuration.set("hbase.zookeeper.quorum", "192.168.40.119:2181,192.168.40.122:2181,192.168.40.123:2181");
+        configuration.set("hbase.client.retries.number", "3");
+        configuration.set("hbase.bulkload.retries.number", "3");
+        configuration.set("zookeeper.recovery.retry", "3");
         try {
             connection = ConnectionFactory.createConnection(configuration);
             time = System.currentTimeMillis();
@@ -41,22 +48,10 @@ public class HBaseTest {
         }
     }
 
-//    @Before
-//    public void connHBase() {
-//
-//    }
-
     @Test
     public void change() {
 //        Long begin = System.currentTimeMillis();
-//        System.gc();
-//        Long start = Runtime.getRuntime().freeMemory();
-//        System.out.println("开始内存"+start);
 //        getAll();
-//        System.gc();
-//        Long end = Runtime.getRuntime().freeMemory();
-//        System.out.println("结束内存"+end);
-//        System.out.println( "一个HashMap对象占内存: " + (end - start));
 //        System.out.println(System.currentTimeMillis() - begin);
     }
 
@@ -67,31 +62,39 @@ public class HBaseTest {
      * @param endTime   结束时间
      */
     private static void timestampsFilter(Long startTime, Long endTime) {
+        Long begin = System.currentTimeMillis();
         Table table = null;
-        TableName tableName = TableName.valueOf("sub:" + FlowWriteConfig.HBASE_TABLE_NAME);
-        Admin admin = null;
+        ResultScanner scanner = null;
+        Scan scan2 = new Scan();
         try {
             table = connection.getTable(TableName.valueOf("sub:" + FlowWriteConfig.HBASE_TABLE_NAME));
-            Scan scan2 = new Scan();
-//            scan2.setCaching(500);
             scan2.setTimeRange(startTime, endTime);
-            ResultScanner scanner = table.getScanner(scan2);
-            scanner.next().isEmpty();
+            scanner = table.getScanner(scan2);
             for (Result result : scanner) {
                 Cell[] cells = result.rawCells();
                 for (Cell cell : cells) {
-                    subIdMap.put(Bytes.toString(CellUtil.cloneRow(cell)), Bytes.toString(CellUtil.cloneValue(cell)));
+//                    int key = Integer.parseInt(Bytes.toString(CellUtil.cloneRow(cell)));
+                    String key = Bytes.toString(CellUtil.cloneRow(cell));
+                    String value = Bytes.toString(CellUtil.cloneValue(cell));
+                    if (subIdMap.containsKey(key)) {
+                        if (!value.equals(subIdMap.get(key))) {
+                            subIdMap.put(key, value);
+                        }
+                    } else {
+                        subIdMap.put(key, value);
+                    }
                 }
             }
-            admin = connection.getAdmin();
-            admin.flush(tableName);
+            Long end = System.currentTimeMillis();
             logger.warn("当前集合长度" + subIdMap.keySet().size());
-            logger.warn("更新后集合keys：" + subIdMap.keySet());
+            logger.warn("更新缓存耗时：" + (end - begin) + "开始时间：" + begin + "结束时间：" + end);
             time = endTime;
-            scanner.close();
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
+            if (scanner != null) {
+                scanner.close();
+            }
             if (table != null) {
                 try {
                     table.close();
@@ -105,7 +108,8 @@ public class HBaseTest {
     /**
      * 获取所有的 key value
      */
-    public static void getAll() {
+    private static void getAll() {
+        Long begin = System.currentTimeMillis();
         try {
             Table table = connection.getTable(TableName.valueOf("sub:" + FlowWriteConfig.HBASE_TABLE_NAME));
             Scan scan2 = new Scan();
@@ -113,28 +117,32 @@ public class HBaseTest {
             for (Result result : scanner) {
                 Cell[] cells = result.rawCells();
                 for (Cell cell : cells) {
+//                    subIdMap.put(Integer.valueOf(Bytes.toString(CellUtil.cloneRow(cell))), Bytes.toString(CellUtil.cloneValue(cell)));
                     subIdMap.put(Bytes.toString(CellUtil.cloneRow(cell)), Bytes.toString(CellUtil.cloneValue(cell)));
                 }
             }
-            logger.warn("获取全量后集合size：" + subIdMap.size());
+            logger.warn("获取全量后集合长度：" + subIdMap.size());
+            logger.warn("获取全量耗时：" + (System.currentTimeMillis() - begin));
             scanner.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-
     /**
      * 获取 account
      *
-     * @param ip client_ip
+     * @param clientIp client_ip
      * @return account
      */
-    public static String getAccount(String ip) {
-        if (StringUtil.isNotBlank(ip)) {
-            return subIdMap.get(ip);
-        } else {
-            return "";
+    public static String getAccount(String clientIp) {
+        int ipType = cn.ac.iie.utils.system.IpUtils.validIPAddress(clientIp);
+        String account = "";
+        if (ipType == FlowWriteConfig.IPV4_TYPE) {
+            account = subIdMap.get(IpUtils.ipChangeInt(clientIp));
+        } else if (ipType == FlowWriteConfig.IPV6_TYPE) {
+            account = subIdMap.get(clientIp);
         }
+        return account;
     }
 }

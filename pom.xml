@@ -67,7 +67,7 @@
                 <directory>properties</directory>
                 <includes>
                     <include>**/*.properties</include>
-                    <include>**/*.xml</include>
+                    <!--<include>**/*.xml</include>-->
                 </includes>
                 <filtering>false</filtering>
             </resource>

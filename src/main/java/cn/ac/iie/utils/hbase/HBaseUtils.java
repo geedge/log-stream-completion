@@ -1,7 +1,8 @@
 package cn.ac.iie.utils.hbase;
 
 import cn.ac.iie.common.FlowWriteConfig;
-import com.zdjizhi.utils.StringUtil;
+import cn.ac.iie.utils.system.IpUtils;
+import io.netty.util.collection.IntObjectHashMap;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.Cell;
 import org.apache.hadoop.hbase.CellUtil;
@@ -14,6 +15,7 @@ import org.apache.log4j.Logger;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * HBase 工具类
@@ -23,7 +25,7 @@ import java.util.Map;
 
 public class HBaseUtils {
     private final static Logger logger = Logger.getLogger(HBaseUtils.class);
-    private static Map<String, String> subIdMap = new HashMap<>(32);
+    private static Map<String, String> subIdMap = new ConcurrentHashMap<>(333334);
     private static Connection connection;
     private static Long time;
 
@@ -32,6 +34,9 @@ public class HBaseUtils {
         Configuration configuration = HBaseConfiguration.create();
         // 设置zookeeper节点
         configuration.set("hbase.zookeeper.quorum", FlowWriteConfig.HBASE_ZOOKEEPER_SERVERS);
+        configuration.set("hbase.client.retries.number", "3");
+        configuration.set("hbase.bulkload.retries.number", "3");
+        configuration.set("zookeeper.recovery.retry", "3");
         try {
             connection = ConnectionFactory.createConnection(configuration);
             time = System.currentTimeMillis();
@@ -47,7 +52,7 @@ public class HBaseUtils {
      */
     public static void change() {
         Long nowTime = System.currentTimeMillis();
-        timestampsFilter(time - 1500, nowTime + 500);
+        timestampsFilter(time - 1000, nowTime + 500);
     }
 
     /**
@@ -65,15 +70,23 @@ public class HBaseUtils {
             table = connection.getTable(TableName.valueOf("sub:" + FlowWriteConfig.HBASE_TABLE_NAME));
             scan2.setTimeRange(startTime, endTime);
             scanner = table.getScanner(scan2);
-            logger.warn("读取HBase变量耗时：" + (System.currentTimeMillis() - begin));
             for (Result result : scanner) {
                 Cell[] cells = result.rawCells();
                 for (Cell cell : cells) {
-                    subIdMap.put(Bytes.toString(CellUtil.cloneRow(cell)), Bytes.toString(CellUtil.cloneValue(cell)));
+                    String key = Bytes.toString(CellUtil.cloneRow(cell));
+                    String value = Bytes.toString(CellUtil.cloneValue(cell));
+                    if (subIdMap.containsKey(key)) {
+                        if (!value.equals(subIdMap.get(key))) {
+                            subIdMap.put(key, value);
+                        }
+                    } else {
+                        subIdMap.put(key, value);
+                    }
                 }
             }
+            Long end = System.currentTimeMillis();
             logger.warn("当前集合长度" + subIdMap.keySet().size());
-            logger.warn("更新缓存耗时：" + (System.currentTimeMillis() - begin));
+            logger.warn("更新缓存耗时：" + (end - begin) + "开始时间：" + begin + "结束时间：" + end);
             time = endTime;
         } catch (IOException e) {
             e.printStackTrace();
@@ -114,18 +127,13 @@ public class HBaseUtils {
         }
     }
 
-
     /**
      * 获取 account
      *
-     * @param ip client_ip
+     * @param clientIp client_ip
      * @return account
      */
-    public static String getAccount(String ip) {
-        if (StringUtil.isNotBlank(ip)) {
-            return subIdMap.get(ip);
-        } else {
-            return "";
-        }
+    public static String getAccount(String clientIp) {
+        return subIdMap.get(clientIp);
     }
 }

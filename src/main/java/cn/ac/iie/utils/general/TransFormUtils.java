@@ -60,7 +60,7 @@ public class TransFormUtils {
             radiusSessionRecordLog.setCommon_server_asn(ipLookup.asnLookup(serverIp, true));
             return JSONObject.toJSONString(radiusSessionRecordLog);
         } catch (Exception e) {
-            logger.error(FlowWriteConfig.KAFKA_TOPIC + "日志解析过程出现异常");
+            logger.error("{} 日志解析过程出现异常" + FlowWriteConfig.KAFKA_TOPIC);
             e.printStackTrace();
             return "";
         }
