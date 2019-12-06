@@ -15,7 +15,7 @@ import org.apache.log4j.Logger;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentSkipListMap;
 
 /**
  * HBase 工具类
@@ -25,7 +25,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class HBaseUtils {
     private final static Logger logger = Logger.getLogger(HBaseUtils.class);
-    private static Map<String, String> subIdMap = new ConcurrentHashMap<>(333334);
+    private static Map<String, String> subIdMap = new HashMap<>(333334);
+//    private static Map<String, String> subIdMap = new ConcurrentSkipListMap<>();
     private static Connection connection;
     private static Long time;
 

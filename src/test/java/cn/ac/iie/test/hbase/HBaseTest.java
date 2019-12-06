@@ -1,10 +1,7 @@
 package cn.ac.iie.test.hbase;
 
 import cn.ac.iie.common.FlowWriteConfig;
-import cn.ac.iie.utils.hbase.HBaseUtils;
 import cn.ac.iie.utils.system.IpUtils;
-import com.zdjizhi.utils.StringUtil;
-import io.netty.util.collection.IntObjectHashMap;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.Cell;
 import org.apache.hadoop.hbase.CellUtil;
@@ -13,19 +10,18 @@ import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.*;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.log4j.Logger;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ConcurrentSkipListMap;
 
 public class HBaseTest {
     private final static Logger logger = Logger.getLogger(HBaseTest.class);
 //    private static Map<Integer, String> subIdMap = new ConcurrentHashMap<Integer, String>(13333334);
     private static Map<String, String> subIdMap = new HashMap<>(13333334);
+    private static Map<String, String> testMap = new ConcurrentSkipListMap<>();
     private static Connection connection;
     private static Long time;
 
@@ -35,7 +31,8 @@ public class HBaseTest {
         Configuration configuration = HBaseConfiguration.create();
         // 设置zookeeper节点
 //        configuration.set("hbase.zookeeper.quorum", FlowWriteConfig.HBASE_ZOOKEEPER_SERVERS);
-        configuration.set("hbase.zookeeper.quorum", "192.168.40.119:2181,192.168.40.122:2181,192.168.40.123:2181");
+//        configuration.set("hbase.zookeeper.quorum", "192.168.40.119:2181,192.168.40.122:2181,192.168.40.123:2181");
+        configuration.set("hbase.zookeeper.quorum", "192.168.40.224:2182");
         configuration.set("hbase.client.retries.number", "3");
         configuration.set("hbase.bulkload.retries.number", "3");
         configuration.set("zookeeper.recovery.retry", "3");
@@ -50,9 +47,9 @@ public class HBaseTest {
 
     @Test
     public void change() {
-//        Long begin = System.currentTimeMillis();
-//        getAll();
-//        System.out.println(System.currentTimeMillis() - begin);
+        Long begin = System.currentTimeMillis();
+        getAll();
+        System.out.println(System.currentTimeMillis() - begin);
     }
 
     /**
@@ -118,10 +115,12 @@ public class HBaseTest {
                 Cell[] cells = result.rawCells();
                 for (Cell cell : cells) {
 //                    subIdMap.put(Integer.valueOf(Bytes.toString(CellUtil.cloneRow(cell))), Bytes.toString(CellUtil.cloneValue(cell)));
-                    subIdMap.put(Bytes.toString(CellUtil.cloneRow(cell)), Bytes.toString(CellUtil.cloneValue(cell)));
+//                    subIdMap.put(Bytes.toString(CellUtil.cloneRow(cell)), Bytes.toString(CellUtil.cloneValue(cell)));
+                    testMap.put(Bytes.toString(CellUtil.cloneRow(cell)), Bytes.toString(CellUtil.cloneValue(cell)));
                 }
             }
-            logger.warn("获取全量后集合长度：" + subIdMap.size());
+//            logger.warn("获取全量后集合长度：" + subIdMap.size());
+            logger.warn("获取全量后集合长度：" + testMap.size());
             logger.warn("获取全量耗时：" + (System.currentTimeMillis() - begin));
             scanner.close();
         } catch (IOException e) {

@@ -63,13 +63,6 @@ public class PublicSessionRecordLog {
         this.common_service = common_service;
     }
 
-    public int getCommon_direction() {
-        return common_direction;
-    }
-
-    public void setCommon_direction(int common_direction) {
-        this.common_direction = common_direction;
-    }
 
     public long getCommon_recv_time() {
         return common_recv_time;
@@ -127,13 +120,6 @@ public class PublicSessionRecordLog {
         this.common_link_id = common_link_id;
     }
 
-    public int getCommon_encapsulation() {
-        return common_encapsulation;
-    }
-
-    public void setCommon_encapsulation(int common_encapsulation) {
-        this.common_encapsulation = common_encapsulation;
-    }
 
     public int getCommon_server_port() {
         return common_server_port;
@@ -221,6 +207,22 @@ public class PublicSessionRecordLog {
 
     public void setCommon_stream_dir(int common_stream_dir) {
         this.common_stream_dir = common_stream_dir;
+    }
+
+    public int getCommon_direction() {
+        return common_direction;
+    }
+
+    public void setCommon_direction(int common_direction) {
+        this.common_direction = common_direction;
+    }
+
+    public int getCommon_encapsulation() {
+        return common_encapsulation;
+    }
+
+    public void setCommon_encapsulation(int common_encapsulation) {
+        this.common_encapsulation = common_encapsulation;
     }
 
     public int getCommon_has_dup_traffic() {

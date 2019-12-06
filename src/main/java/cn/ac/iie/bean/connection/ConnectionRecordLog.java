@@ -49,8 +49,8 @@ public class ConnectionRecordLog extends PublicSessionRecordLog {
 //TODO 3DNS协议属性    18
 
     private int dns_message_id;
-    private int dns_qr;
-    private int dns_opcode;
+    private Integer dns_qr;
+    private Integer dns_opcode;
     private int dns_aa;
     private int dns_tc;
     private int dns_rd;
@@ -70,11 +70,11 @@ public class ConnectionRecordLog extends PublicSessionRecordLog {
 //TODO SSL协议属性   13
 
 
-    private int ssl_pinningst;
-    private int ssl_intercept_state;
+    private Integer ssl_pinningst;
+    private Integer ssl_intercept_state;
     private int ssl_server_side_latency;
     private int ssl_client_side_latency;
-    private int ssl_cert_verify;
+    private Integer ssl_cert_verify;
     private int ssl_con_latency_ms;
     private String ssl_version;
     private String ssl_sni;
@@ -161,6 +161,23 @@ public class ConnectionRecordLog extends PublicSessionRecordLog {
         this.http_response_header = http_response_header;
     }
 
+
+    public Integer getSsl_pinningst() {
+        return ssl_pinningst;
+    }
+
+    public void setSsl_pinningst(Integer ssl_pinningst) {
+        this.ssl_pinningst = ssl_pinningst;
+    }
+
+    public Integer getSsl_intercept_state() {
+        return ssl_intercept_state;
+    }
+
+    public void setSsl_intercept_state(Integer ssl_intercept_state) {
+        this.ssl_intercept_state = ssl_intercept_state;
+    }
+
     public String getHttp_request_body() {
         return http_request_body;
     }
@@ -183,6 +200,14 @@ public class ConnectionRecordLog extends PublicSessionRecordLog {
 
     public void setHttp_request_body_key(String http_request_body_key) {
         this.http_request_body_key = http_request_body_key;
+    }
+
+    public Integer getSsl_cert_verify() {
+        return ssl_cert_verify;
+    }
+
+    public void setSsl_cert_verify(Integer ssl_cert_verify) {
+        this.ssl_cert_verify = ssl_cert_verify;
     }
 
     public String getHttp_response_body_key() {
@@ -353,19 +378,19 @@ public class ConnectionRecordLog extends PublicSessionRecordLog {
         this.dns_message_id = dns_message_id;
     }
 
-    public int getDns_qr() {
+    public Integer getDns_qr() {
         return dns_qr;
     }
 
-    public void setDns_qr(int dns_qr) {
+    public void setDns_qr(Integer dns_qr) {
         this.dns_qr = dns_qr;
     }
 
-    public int getDns_opcode() {
+    public Integer getDns_opcode() {
         return dns_opcode;
     }
 
-    public void setDns_opcode(int dns_opcode) {
+    public void setDns_opcode(Integer dns_opcode) {
         this.dns_opcode = dns_opcode;
     }
 
@@ -489,21 +514,6 @@ public class ConnectionRecordLog extends PublicSessionRecordLog {
         this.dns_rr = dns_rr;
     }
 
-    public int getSsl_pinningst() {
-        return ssl_pinningst;
-    }
-
-    public void setSsl_pinningst(int ssl_pinningst) {
-        this.ssl_pinningst = ssl_pinningst;
-    }
-
-    public int getSsl_intercept_state() {
-        return ssl_intercept_state;
-    }
-
-    public void setSsl_intercept_state(int ssl_intercept_state) {
-        this.ssl_intercept_state = ssl_intercept_state;
-    }
 
     public int getSsl_server_side_latency() {
         return ssl_server_side_latency;
@@ -519,14 +529,6 @@ public class ConnectionRecordLog extends PublicSessionRecordLog {
 
     public void setSsl_client_side_latency(int ssl_client_side_latency) {
         this.ssl_client_side_latency = ssl_client_side_latency;
-    }
-
-    public int getSsl_cert_verify() {
-        return ssl_cert_verify;
-    }
-
-    public void setSsl_cert_verify(int ssl_cert_verify) {
-        this.ssl_cert_verify = ssl_cert_verify;
     }
 
     public int getSsl_con_latency_ms() {
