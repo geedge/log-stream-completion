@@ -1,23 +1,17 @@
 package cn.ac.iie.utils.general;
 
-import cn.ac.iie.bean.connection.ConnectionRecordLog;
-import cn.ac.iie.bean.proxy.ProxySessionRecordLog;
-import cn.ac.iie.bean.radius.RadiusSessionRecordLog;
-import cn.ac.iie.bean.security.SecurityPolicyLog;
+
 import cn.ac.iie.common.FlowWriteConfig;
 import cn.ac.iie.utils.hbase.HBaseUtils;
+import cn.ac.iie.utils.json.JsonParseUtil;
 import cn.ac.iie.utils.system.SnowflakeId;
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.net.InternetDomainName;
 import com.zdjizhi.utils.IpLookup;
 import com.zdjizhi.utils.StringUtil;
 import org.apache.log4j.Logger;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.regex.Matcher;
+import java.util.*;
 import java.util.regex.Pattern;
 
 
@@ -30,9 +24,10 @@ import java.util.regex.Pattern;
 
 public class TransFormUtils {
     private static Logger logger = Logger.getLogger(TransFormUtils.class);
-    //    private final static Set<String> PUBLIC_SUFFIX_SET = new HashSet<String>(
-//            Arrays.asList("com|org|net|gov|edu|co|tv|mobi|info|asia|xxx|onion|cc|cn|com.cn|edu.cn|gov.cn|net.cn|org.cn|jp|kr|tw|com.hk|hk|com.hk|org.hk|se|com.se|org.se"
-//                    .split("\\|")));
+    private final static Set<String> PUBLIC_SUFFIX_SET = new HashSet<String>(
+            Arrays.asList("com|org|net|gov|edu|co|tv|mobi|info|asia|xxx|onion|cc|cn|com.cn|edu.cn|gov.cn|net.cn|org.cn|jp|kr|tw|com.hk|hk|com.hk|org.hk|se|com.se|org.se"
+                    .split("\\|")));
+    private static Pattern IP_PATTERN = Pattern.compile("(\\d{1,3}\\.){3}(\\d{1,3})");
     private static IpLookup ipLookup = new IpLookup.Builder(false)
             .loadDataFileV4(FlowWriteConfig.IP_LIBRARY + "Kazakhstan.mmdb")
             .loadDataFileV6(FlowWriteConfig.IP_LIBRARY + "Kazakhstan.mmdb")
@@ -40,63 +35,12 @@ public class TransFormUtils {
             .loadAsnDataFileV6(FlowWriteConfig.IP_LIBRARY + "asn_v6.mmdb")
             .build();
 
-
-    /**
-     * 解析日志，并补全
-     * 补subscriber_id，不补domain
-     *
-     * @param message radius原始日志
-     * @return 补全后的日志
-     */
-    public static String getRadiusMessage(String message) {
-        RadiusSessionRecordLog radiusSessionRecordLog = JSONObject.parseObject(message, RadiusSessionRecordLog.class);
-        String serverIp = radiusSessionRecordLog.getCommon_server_ip();
-        String clientIp = radiusSessionRecordLog.getCommon_client_ip();
-        try {
-            radiusSessionRecordLog.setCommon_log_id(SnowflakeId.generateId());
-            radiusSessionRecordLog.setCommon_recv_time((System.currentTimeMillis() / 1000));
-            radiusSessionRecordLog.setCommon_server_location(ipLookup.countryLookup(serverIp));
-            radiusSessionRecordLog.setCommon_client_location(ipLookup.cityLookupDetail(clientIp));
-            radiusSessionRecordLog.setCommon_client_asn(ipLookup.asnLookup(clientIp, true));
-            radiusSessionRecordLog.setCommon_server_asn(ipLookup.asnLookup(serverIp, true));
-            radiusSessionRecordLog.setCommon_subscriber_id(radiusSessionRecordLog.getRadius_account());
-            return JSONObject.toJSONString(radiusSessionRecordLog);
-        } catch (Exception e) {
-            logger.error(FlowWriteConfig.KAFKA_TOPIC + "日志解析过程出现异常");
-            e.printStackTrace();
-            return "";
-        }
-    }
-
-
-    /**
-     * 解析日志，并补全
-     * 补domain,补subscriber_id
-     *
-     * @param message Proxy原始日志
-     * @return 补全后的日志
-     */
-    public static String getProxyMessage(String message) {
-        ProxySessionRecordLog proxySessionRecordLog = JSONObject.parseObject(message, ProxySessionRecordLog.class);
-        String serverIp = proxySessionRecordLog.getCommon_server_ip();
-        String clientIp = proxySessionRecordLog.getCommon_client_ip();
-        try {
-            proxySessionRecordLog.setCommon_log_id(SnowflakeId.generateId());
-            proxySessionRecordLog.setCommon_recv_time((System.currentTimeMillis() / 1000));
-            proxySessionRecordLog.setCommon_server_location(ipLookup.countryLookup(serverIp));
-            proxySessionRecordLog.setCommon_client_location(ipLookup.cityLookupDetail(clientIp));
-            proxySessionRecordLog.setCommon_client_asn(ipLookup.asnLookup(clientIp, true));
-            proxySessionRecordLog.setCommon_server_asn(ipLookup.asnLookup(serverIp, true));
-            //TODO 集成AAA数据subscribe_id -数据端补全
-            proxySessionRecordLog.setCommon_subscriber_id(HBaseUtils.getAccount(clientIp));
-            proxySessionRecordLog.setHttp_domain(getTopDomain(null, proxySessionRecordLog.getHttp_host()));
-            return JSONObject.toJSONString(proxySessionRecordLog);
-        } catch (Exception e) {
-            logger.error(FlowWriteConfig.KAFKA_TOPIC + "日志解析过程出现异常");
-            e.printStackTrace();
-            return "";
-        }
-    }
+    //在内存中加载反射类用的map
+    private static HashMap<String, Class> map = JsonParseUtil.getMapFromhttp(FlowWriteConfig.SCHEMA_HTTP);
+    //反射成一个类
+    private static Object mapObject = JsonParseUtil.generateObject(map);
+    //获取任务列表
+    private static ArrayList<String[]> jobList = JsonParseUtil.getJobListFromHttp(FlowWriteConfig.SCHEMA_HTTP);
 
 
     /**
@@ -105,22 +49,51 @@ public class TransFormUtils {
      *
      * @param message Security原始日志
      * @return 补全后的日志
+     * <p>
+     * current_timestamp
+     * snowflake_id
+     * geo_ip_detail
+     * geo_asn
+     * radius_match
+     * geo_ip_country
+     * geo_asn
+     * sub_domain
+     * sub_domain
      */
-    public static String getSecurityMessage(String message) {
-        SecurityPolicyLog securitySessionRecordLog = JSONObject.parseObject(message, SecurityPolicyLog.class);
-        String serverIp = securitySessionRecordLog.getCommon_server_ip();
-        String clientIp = securitySessionRecordLog.getCommon_client_ip();
+    public static String dealCommonMessage(String message) {
+
+        Object object = JSONObject.parseObject(message, mapObject.getClass());
+//        System.out.println("补全之前 ===》 "+JSON.toJSONString(object));
         try {
-            securitySessionRecordLog.setCommon_log_id(SnowflakeId.generateId());
-            securitySessionRecordLog.setCommon_recv_time((System.currentTimeMillis() / 1000));
-            securitySessionRecordLog.setCommon_server_location(ipLookup.countryLookup(serverIp));
-            securitySessionRecordLog.setCommon_client_location(ipLookup.cityLookupDetail(clientIp));
-            securitySessionRecordLog.setCommon_client_asn(ipLookup.asnLookup(clientIp, true));
-            securitySessionRecordLog.setCommon_server_asn(ipLookup.asnLookup(serverIp, true));
-            //TODO 集成AAA数据subscribe_id -数据端补全
-            securitySessionRecordLog.setCommon_subscriber_id(HBaseUtils.getAccount(clientIp));
-            securitySessionRecordLog.setHttp_domain(getTopDomain(securitySessionRecordLog.getSsl_sni(), securitySessionRecordLog.getHttp_host()));
-            return JSONObject.toJSONString(securitySessionRecordLog);
+            for (String[] strings : jobList) {
+
+                if (strings[2].equals("current_timestamp")) {
+                    JsonParseUtil.setValue(object, strings[1], getCurrentTime());
+                } else if (strings[2].equals("snowflake_id")) {
+                    JsonParseUtil.setValue(object, strings[1], getSnowflakeId());
+                } else if (strings[2].equals("geo_ip_detail")) {
+                    JsonParseUtil.setValue(object, strings[1], getGeoIpDetail(JsonParseUtil.getValue(object, strings[0]).toString()));
+                } else if (strings[2].equals("geo_asn")) {
+                    JsonParseUtil.setValue(object, strings[1], getGeoIpDetail(JsonParseUtil.getValue(object, strings[0]).toString()));
+                } else if (strings[2].equals("radius_match")) {
+                    JsonParseUtil.setValue(object,strings[1],HBaseUtils.getAccount(JsonParseUtil.getValue(object,strings[0]).toString()));
+//                    JsonParseUtil.setValue(object, strings[1], "aaaaaaaaa");
+                } else if (strings[2].equals("geo_ip_country")) {
+                    JsonParseUtil.setValue(object, strings[1], getGeoIpCountry(JsonParseUtil.getValue(object, strings[0]).toString()));
+                } else if (strings[0].equals("http_host") && strings[2].equals("sub_domain")) {
+                    JsonParseUtil.setValue(object,strings[1],getTopDomain(null,JsonParseUtil.getValue(object,strings[0]).toString()));
+                } else if (strings[0].equals("ssl_sni") && strings[2].equals("sub_domain")) {
+                    if (StringUtil.isBlank(JsonParseUtil.getValue(object, strings[1]).toString())) {
+                        JsonParseUtil.setValue(object,strings[1],getTopDomain(JsonParseUtil.getValue(object,strings[0]).toString(),null));
+                    }
+
+                }
+            }
+
+
+            return JSONObject.toJSONString(object);
+//            System.out.println("补全之后 ===》 "+JSON.toJSONString(object));
+
         } catch (Exception e) {
             logger.error(FlowWriteConfig.KAFKA_TOPIC + "日志解析过程出现异常");
             e.printStackTrace();
@@ -128,37 +101,9 @@ public class TransFormUtils {
         }
     }
 
-    /**
-     * 解析日志，并补全
-     * 补domain,补subscriber_id
-     *
-     * @param message CollectProtocol原始日志
-     * @return 补全后的日志
-     */
-    public static String getCollectProtocolMessage(String message) {
-        ConnectionRecordLog collectProtocolRecordLog = JSONObject.parseObject(message, ConnectionRecordLog.class);
-        String serverIp = collectProtocolRecordLog.getCommon_server_ip();
-        String clientIp = collectProtocolRecordLog.getCommon_client_ip();
-        try {
-            collectProtocolRecordLog.setCommon_log_id(SnowflakeId.generateId());
-            collectProtocolRecordLog.setCommon_recv_time((System.currentTimeMillis() / 1000));
-            collectProtocolRecordLog.setCommon_server_location(ipLookup.countryLookup(serverIp));
-            collectProtocolRecordLog.setCommon_client_location(ipLookup.cityLookupDetail(clientIp));
-            collectProtocolRecordLog.setCommon_client_asn(ipLookup.asnLookup(clientIp, true));
-            collectProtocolRecordLog.setCommon_server_asn(ipLookup.asnLookup(serverIp, true));
-            //TODO 集成AAA数据subscribe_id -数据端补全
-            collectProtocolRecordLog.setCommon_subscriber_id(HBaseUtils.getAccount(clientIp));
-            collectProtocolRecordLog.setHttp_domain(getTopDomain(collectProtocolRecordLog.getSsl_sni(), collectProtocolRecordLog.getHttp_host()));
-            return JSONObject.toJSONString(collectProtocolRecordLog);
-        } catch (Exception e) {
-            logger.error(FlowWriteConfig.KAFKA_TOPIC + "日志解析过程出现异常");
-            e.printStackTrace();
-            return "";
-        }
-    }
 
     /**
-     * 有sni通过sni获取域名，有hots根据host获取域名
+     * 有sni通过sni获取域名，有host根据host获取域名
      *
      * @param sni  sni
      * @param host host
@@ -191,5 +136,91 @@ public class TransFormUtils {
         return domain;
     }
 
+    /**
+     * 生成当前时间戳的操作
+     */
+    private static long getCurrentTime() {
+        return (System.currentTimeMillis() / 1000);
+    }
 
+    /**
+     * 雪花模型生成id
+     *
+     * @return
+     */
+    private static long getSnowflakeId() {
+
+        return SnowflakeId.generateId();
+    }
+
+    /**
+     * 根据clientIp获取location信息
+     *
+     * @param ip
+     * @return
+     */
+    private static String getGeoIpDetail(String ip) {
+
+        return ipLookup.cityLookupDetail(ip);
+    }
+
+    /**
+     * 根据ip获取asn信息
+     *
+     * @param ip
+     * @return
+     */
+    private static String getGeoAsn(String ip) {
+
+        return ipLookup.asnLookup(ip, true);
+    }
+
+    /**
+     * 根据ip获取country信息
+     *
+     * @param ip
+     * @return
+     */
+    private static String getGeoIpCountry(String ip) {
+
+        return ipLookup.countryLookup(ip);
+    }
+
+    /**
+     * radius借助hbase补齐
+     *
+     * @param ip
+     * @return
+     */
+    private static String radiusMatch(String ip) {
+        return HBaseUtils.getAccount(ip);
+    }
+
+    /**
+     * switch 匹配合适的方法
+     * current_timestamp
+     * snowflake_id
+     * geo_ip_detail
+     * geo_asn
+     * radius_match
+     * geo_ip_country
+     * geo_asn
+     * sub_domain
+     * sub_domain
+     * @param func
+     */
+//TODO 行不通的原因是无法统一一个确定的返回值类型
+ /*   private static String switchFunc(String func){
+        switch (func){
+            case "current_timestamp":
+                return String.valueOf(getCurrentTime());
+            case "snowflake_id":
+            case "geo_ip_detail":
+            case "geo_asn":
+            case "radius_match":
+            case "geo_ip_country":
+            case "sub_domain":
+        }
+        return func;
+    }*/
 }

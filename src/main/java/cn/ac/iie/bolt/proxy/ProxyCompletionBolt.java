@@ -15,7 +15,7 @@ import org.apache.storm.tuple.Values;
 import java.util.HashMap;
 import java.util.Map;
 
-import static cn.ac.iie.utils.general.TransFormUtils.getProxyMessage;
+import static cn.ac.iie.utils.general.TransFormUtils.dealCommonMessage;
 import static cn.ac.iie.utils.hbase.HBaseUtils.change;
 
 /**
@@ -41,7 +41,7 @@ public class ProxyCompletionBolt extends BaseBasicBolt {
             } else {
                 String message = tuple.getString(0);
                 if (StringUtil.isNotBlank(message)) {
-                    basicOutputCollector.emit(new Values(getProxyMessage(message)));
+                    basicOutputCollector.emit(new Values(dealCommonMessage(message)));
                 }
             }
         } catch (Exception e) {

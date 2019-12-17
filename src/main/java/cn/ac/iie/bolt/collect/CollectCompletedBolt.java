@@ -16,8 +16,10 @@ import org.apache.storm.tuple.Values;
 import java.util.HashMap;
 import java.util.Map;
 
-import static cn.ac.iie.utils.general.TransFormUtils.getCollectProtocolMessage;
-import static cn.ac.iie.utils.hbase.HBaseUtils.change;
+
+import static cn.ac.iie.utils.general.TransFormUtils.dealCommonMessage;
+
+
 
 /**
  * 通联关系日志补全
@@ -36,11 +38,11 @@ public class CollectCompletedBolt extends BaseBasicBolt {
     public void execute(Tuple tuple, BasicOutputCollector basicOutputCollector) {
         try {
             if (TupleUtils.isTick(tuple)) {
-                change();
+                HBaseUtils.change();
             } else {
                 String message = tuple.getString(0);
                 if (StringUtil.isNotBlank(message)) {
-                    basicOutputCollector.emit(new Values(getCollectProtocolMessage(message)));
+                    basicOutputCollector.emit(new Values(dealCommonMessage(message)));
                 }
             }
         } catch (Exception e) {

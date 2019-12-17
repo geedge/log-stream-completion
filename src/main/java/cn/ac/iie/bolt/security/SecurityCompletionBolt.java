@@ -16,8 +16,8 @@ import org.apache.storm.tuple.Values;
 import java.util.HashMap;
 import java.util.Map;
 
-import static cn.ac.iie.utils.general.TransFormUtils.getSecurityMessage;
-import static cn.ac.iie.utils.general.schema.TransFormUtils.dealCommonMessage;
+import static cn.ac.iie.utils.general.TransFormUtils.dealCommonMessage;
+
 
 /**
  * 通联关系日志补全
