@@ -25,7 +25,7 @@ public class DomainUtils {
 //            System.out.println(InternetDomainName.from(s));
 //            System.out.println(InternetDomainName.from(s).topPrivateDomain());
 //        }else {
-            System.out.println(InternetDomainName.from(host).topDomainUnderRegistrySuffix());
+//            System.out.println(InternetDomainName.from(host).topDomainUnderRegistrySuffix());
             System.out.println(InternetDomainName.from(host).topPrivateDomain());
 
 //        }

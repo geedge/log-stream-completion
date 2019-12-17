@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static cn.ac.iie.utils.general.TransFormUtils.getSecurityMessage;
+import static cn.ac.iie.utils.general.schema.TransFormUtils.dealCommonMessage;
 
 /**
  * 通联关系日志补全
@@ -42,7 +43,7 @@ public class SecurityCompletionBolt extends BaseBasicBolt {
             } else {
                 String message = tuple.getString(0);
                 if (StringUtil.isNotBlank(message)) {
-                    basicOutputCollector.emit(new Values(getSecurityMessage(message)));
+                    basicOutputCollector.emit(new Values(dealCommonMessage(message)));
                 }
             }
         } catch (Exception e) {

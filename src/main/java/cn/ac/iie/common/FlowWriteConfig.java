@@ -49,6 +49,9 @@ public class FlowWriteConfig {
 
     public static final String IP_LIBRARY = FlowWriteConfigurations.getStringProperty(0, "ip.library");
 
-
+    /**
+     * http
+     */
+    public static final String SCHEMA_HTTP = FlowWriteConfigurations.getStringProperty(0, "schema.http");
 
 }
