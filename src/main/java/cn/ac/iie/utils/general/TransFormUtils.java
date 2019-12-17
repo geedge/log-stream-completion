@@ -7,7 +7,9 @@ import cn.ac.iie.bean.security.SecurityPolicyLog;
 import cn.ac.iie.common.FlowWriteConfig;
 import cn.ac.iie.utils.hbase.HBaseUtils;
 import cn.ac.iie.utils.system.SnowflakeId;
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.google.common.net.InternetDomainName;
 import com.zdjizhi.utils.IpLookup;
 import com.zdjizhi.utils.StringUtil;
 import org.apache.log4j.Logger;
@@ -28,10 +30,9 @@ import java.util.regex.Pattern;
 
 public class TransFormUtils {
     private static Logger logger = Logger.getLogger(TransFormUtils.class);
-    private final static Set<String> PUBLIC_SUFFIX_SET = new HashSet<String>(
-            Arrays.asList("com|org|net|gov|edu|co|tv|mobi|info|asia|xxx|onion|cc|cn|com.cn|edu.cn|gov.cn|net.cn|org.cn|jp|kr|tw|com.hk|hk|com.hk|org.hk|se|com.se|org.se"
-                    .split("\\|")));
-    private static Pattern IP_PATTERN = Pattern.compile("(\\d{1,3}\\.){3}(\\d{1,3})");
+    //    private final static Set<String> PUBLIC_SUFFIX_SET = new HashSet<String>(
+//            Arrays.asList("com|org|net|gov|edu|co|tv|mobi|info|asia|xxx|onion|cc|cn|com.cn|edu.cn|gov.cn|net.cn|org.cn|jp|kr|tw|com.hk|hk|com.hk|org.hk|se|com.se|org.se"
+//                    .split("\\|")));
     private static IpLookup ipLookup = new IpLookup.Builder(false)
             .loadDataFileV4(FlowWriteConfig.IP_LIBRARY + "Kazakhstan.mmdb")
             .loadDataFileV6(FlowWriteConfig.IP_LIBRARY + "Kazakhstan.mmdb")
@@ -58,9 +59,10 @@ public class TransFormUtils {
             radiusSessionRecordLog.setCommon_client_location(ipLookup.cityLookupDetail(clientIp));
             radiusSessionRecordLog.setCommon_client_asn(ipLookup.asnLookup(clientIp, true));
             radiusSessionRecordLog.setCommon_server_asn(ipLookup.asnLookup(serverIp, true));
+            radiusSessionRecordLog.setCommon_subscriber_id(radiusSessionRecordLog.getRadius_account());
             return JSONObject.toJSONString(radiusSessionRecordLog);
         } catch (Exception e) {
-            logger.error("{} 日志解析过程出现异常" + FlowWriteConfig.KAFKA_TOPIC);
+            logger.error(FlowWriteConfig.KAFKA_TOPIC + "日志解析过程出现异常");
             e.printStackTrace();
             return "";
         }
@@ -149,7 +151,8 @@ public class TransFormUtils {
             collectProtocolRecordLog.setHttp_domain(getTopDomain(collectProtocolRecordLog.getSsl_sni(), collectProtocolRecordLog.getHttp_host()));
             return JSONObject.toJSONString(collectProtocolRecordLog);
         } catch (Exception e) {
-            logger.error(FlowWriteConfig.KAFKA_TOPIC + "日志解析过程出现异常", e);
+            logger.error(FlowWriteConfig.KAFKA_TOPIC + "日志解析过程出现异常");
+            e.printStackTrace();
             return "";
         }
     }
@@ -179,23 +182,13 @@ public class TransFormUtils {
      * @return 顶级域名
      */
     private static String getDomainName(String host) {
-        if (host.endsWith(FlowWriteConfig.DOMAIN_SPLITTER)) {
-            host = host.substring(0, host.length() - 1);
+        String domain = "";
+        try {
+            domain = InternetDomainName.from(host).topPrivateDomain().toString();
+        } catch (Exception e) {
+            logger.error("host解析顶级域名异常: " + e.getMessage());
         }
-        if (IP_PATTERN.matcher(host).matches()) {
-            return host;
-        }
-        int index = 0;
-        String candidate = host;
-        for (; index >= 0; ) {
-            index = candidate.indexOf(FlowWriteConfig.DOMAIN_SPLITTER);
-            String subCandidate = candidate.substring(index + 1);
-            if (PUBLIC_SUFFIX_SET.contains(subCandidate)) {
-                return candidate;
-            }
-            candidate = subCandidate;
-        }
-        return candidate;
+        return domain;
     }
 
 

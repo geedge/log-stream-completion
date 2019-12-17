@@ -72,7 +72,7 @@ public class KafkaLogNtc {
         properties.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
         properties.put("acks", "1");
         properties.put("linger.ms", "2");
-        properties.put("request.timeout.ms", 60000);
+        properties.put("request.timeout.ms", 30000);
         properties.put("batch.size", 262144);
         properties.put("buffer.memory", 33554432);
 //        properties.put("compression.type", "snappy");

@@ -32,7 +32,7 @@ public class HBaseTest {
         // 设置zookeeper节点
 //        configuration.set("hbase.zookeeper.quorum", FlowWriteConfig.HBASE_ZOOKEEPER_SERVERS);
 //        configuration.set("hbase.zookeeper.quorum", "192.168.40.119:2181,192.168.40.122:2181,192.168.40.123:2181");
-        configuration.set("hbase.zookeeper.quorum", "192.168.40.224:2182");
+        configuration.set("hbase.zookeeper.quorum", "192.168.40.186:2182");
         configuration.set("hbase.client.retries.number", "3");
         configuration.set("hbase.bulkload.retries.number", "3");
         configuration.set("zookeeper.recovery.retry", "3");
