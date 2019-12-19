@@ -41,7 +41,9 @@ public class TransFormUtils {
     private static Object mapObject = JsonParseUtil.generateObject(map);
     //获取任务列表
     private static ArrayList<String[]> jobList = JsonParseUtil.getJobListFromHttp(FlowWriteConfig.SCHEMA_HTTP);
-
+    //需要用到的值
+    public static Object use;
+    public static Object appendTo;
 
     /**
      * 解析日志，并补全
@@ -66,33 +68,36 @@ public class TransFormUtils {
 //        System.out.println("补全之前 ===》 "+JSON.toJSONString(object));
         try {
             for (String[] strings : jobList) {
-
+                //参数的值
+                use = JsonParseUtil.getValue(object,strings[0]);
+                //补全的字段的值
+                appendTo = JsonParseUtil.getValue(object,strings[1]);
                 if (strings[2].equals("current_timestamp")) {
                     JsonParseUtil.setValue(object, strings[1], getCurrentTime());
                 } else if (strings[2].equals("snowflake_id")) {
                     JsonParseUtil.setValue(object, strings[1], getSnowflakeId());
                 } else if (strings[2].equals("geo_ip_detail")) {
-                    JsonParseUtil.setValue(object, strings[1], getGeoIpDetail(JsonParseUtil.getValue(object, strings[0]).toString()));
+                    JsonParseUtil.setValue(object, strings[1], getGeoIpDetail(use.toString()));
                 } else if (strings[2].equals("geo_asn")) {
-                    JsonParseUtil.setValue(object, strings[1], getGeoIpDetail(JsonParseUtil.getValue(object, strings[0]).toString()));
+                    JsonParseUtil.setValue(object, strings[1], getGeoIpDetail(use.toString()));
                 } else if (strings[2].equals("radius_match")) {
-                    JsonParseUtil.setValue(object,strings[1],HBaseUtils.getAccount(JsonParseUtil.getValue(object,strings[0]).toString()));
-//                    JsonParseUtil.setValue(object, strings[1], "aaaaaaaaa");
+                    JsonParseUtil.setValue(object,strings[1],HBaseUtils.getAccount(use.toString()));
                 } else if (strings[2].equals("geo_ip_country")) {
-                    JsonParseUtil.setValue(object, strings[1], getGeoIpCountry(JsonParseUtil.getValue(object, strings[0]).toString()));
-                } else if (strings[0].equals("http_host") && strings[2].equals("sub_domain")) {
-                    if (JsonParseUtil.getValue(object, strings[1]) == null || StringUtil.isBlank(JsonParseUtil.getValue(object, strings[1]).toString())) {
-//                        JsonParseUtil.setValue(object, strings[1], "baidu.com");
-                        JsonParseUtil.setValue(object, strings[1], getTopDomain(null, JsonParseUtil.getValue(object, strings[0]).toString()));
+                    JsonParseUtil.setValue(object, strings[1], getGeoIpCountry(use.toString()));
+                } else if (strings[0].equals("http_host") && strings[2].equals("sub_domain") && use != null) {
+                    if (appendTo == null || StringUtil.isBlank(appendTo.toString())) {
+                        JsonParseUtil.setValue(object, strings[1], getTopDomain(null, use.toString()));
                     }
-                } else if (strings[0].equals("ssl_sni") && strings[2].equals("sub_domain")) {
-                    if (JsonParseUtil.getValue(object, strings[1]) == null || StringUtil.isBlank(JsonParseUtil.getValue(object, strings[1]).toString())) {
-                        JsonParseUtil.setValue(object,strings[1],getTopDomain(JsonParseUtil.getValue(object,strings[0]).toString(),null));
+                } else if (strings[0].equals("ssl_sni") && strings[2].equals("sub_domain") && use != null) {
+                    if (appendTo == null || StringUtil.isBlank(appendTo.toString())) {
+                        JsonParseUtil.setValue(object,strings[1],getTopDomain(use.toString(),null));
                     }
 
                 }
             }
-
+            //初始化一下
+            use = null;
+            appendTo = null;
 
             return JSONObject.toJSONString(object);
 //            System.out.println("补全之后 ===》 "+JSON.toJSONString(object));
