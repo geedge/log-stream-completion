@@ -81,9 +81,12 @@ public class TransFormUtils {
                 } else if (strings[2].equals("geo_ip_country")) {
                     JsonParseUtil.setValue(object, strings[1], getGeoIpCountry(JsonParseUtil.getValue(object, strings[0]).toString()));
                 } else if (strings[0].equals("http_host") && strings[2].equals("sub_domain")) {
-                    JsonParseUtil.setValue(object,strings[1],getTopDomain(null,JsonParseUtil.getValue(object,strings[0]).toString()));
+                    if (JsonParseUtil.getValue(object, strings[1]) == null || StringUtil.isBlank(JsonParseUtil.getValue(object, strings[1]).toString())) {
+//                        JsonParseUtil.setValue(object, strings[1], "baidu.com");
+                        JsonParseUtil.setValue(object, strings[1], getTopDomain(null, JsonParseUtil.getValue(object, strings[0]).toString()));
+                    }
                 } else if (strings[0].equals("ssl_sni") && strings[2].equals("sub_domain")) {
-                    if (StringUtil.isBlank(JsonParseUtil.getValue(object, strings[1]).toString())) {
+                    if (JsonParseUtil.getValue(object, strings[1]) == null || StringUtil.isBlank(JsonParseUtil.getValue(object, strings[1]).toString())) {
                         JsonParseUtil.setValue(object,strings[1],getTopDomain(JsonParseUtil.getValue(object,strings[0]).toString(),null));
                     }
 
