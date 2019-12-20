@@ -10,6 +10,7 @@ import com.google.common.net.InternetDomainName;
 import com.zdjizhi.utils.IpLookup;
 import com.zdjizhi.utils.StringUtil;
 import org.apache.log4j.Logger;
+import org.junit.jupiter.api.Test;
 
 import java.util.*;
 import java.util.regex.Pattern;
@@ -42,7 +43,6 @@ public class TransFormUtils {
     //获取任务列表
     private static ArrayList<String[]> jobList = JsonParseUtil.getJobListFromHttp(FlowWriteConfig.SCHEMA_HTTP);
 
-
     /**
      * 解析日志，并补全
      * 补domain,补subscriber_id
@@ -62,14 +62,19 @@ public class TransFormUtils {
      */
     public static String dealCommonMessage(String message) {
 
+
+
+//        message="{\"ssl_sni\":\"pos.baidu.com\",\"ssl_version\":\"v3\",\"ssl_cn\":\"baidu.com\",\"ssl_san\":\"baidu.com;click.hm.baidu.com;cm.pos.baidu.com;log.hm.baidu.com;update.pan.baidu.com;wn.pos.baidu.com;*.91.com;*.aipage.cn;*.aipage.com;*.apollo.auto;*.baidu.com;*.baidubce.com;*.baiducontent.com;*.baidupcs.com;*.baidustatic.com;*.baifubao.com;*.bce.baidu.com;*.bcehost.com;*.bdimg.com;*.bdstatic.com;*.bdtjrcv.com;*.bj.baidubce.com;*.chuanke.com;*.dlnel.com;*.dlnel.org;*.dueros.baidu.com;*.eyun.baidu.com;*.fanyi.baidu.com;*.gz.baidubce.com;*.hao123.baidu.com;*.hao123.com;*.hao222.com;*.haokan.com;*.im.baidu.com;*.map.baidu.com;*.mbd.baidu.com;*.mipcdn.com;*.news.baidu.com;*.nuomi.com;*.safe.baidu.com;*.smartapps.cn;*.su.baidu.com;*.trustgo.com;*.xueshu.baidu.com;apollo.auto;baifubao.com;dwz.cn;mct.y.nuomi.com;www.baidu.cn;www.baidu.com.cn\",\"common_schema_type\":\"SSL\",\"common_server_ip\":\"182.61.200.109\",\"common_client_ip\":\"192.168.50.144\",\"common_server_port\":443,\"common_client_port\":50529,\"common_stream_dir\":3,\"common_address_type\":4,\"common_s2c_pkt_num\":46,\"common_s2c_byte_num\":33149,\"common_c2s_pkt_num\":23,\"common_c2s_byte_num\":6147,\"common_start_time\":1576744784,\"common_end_time\":1576744799,\"common_con_duration_ms\":15000,\"common_stream_trace_id\":7686307990192,\"common_l4_protocol\":\"IPv4_TCP\",\"common_address_list\":\"50529-443-192.168.50.144-182.61.200.109\",\"common_sled_ip\":\"192.168.40.21\",\"common_policy_id\":172,\"common_service\":0,\"common_action\":2,\"common_user_region\":\"{\\\"protocol\\\":\\\"SSL\\\",\\\"protocol_version\\\":{\\\"allow_http2\\\":1,\\\"min\\\":\\\"ssl3\\\",\\\"max\\\":\\\"tls13\\\",\\\"mirror_client\\\":1},\\\"dynamic_bypass\\\":{\\\"mutual_authentication\\\":1,\\\"cert_pinning\\\":1,\\\"cert_transparency\\\":0,\\\"protocol_errors\\\":1,\\\"ev_cert\\\":0},\\\"decrypt_mirror\\\":{\\\"enable\\\":0},\\\"certificate_checks\\\":{\\\"fail_action\\\":\\\"pass-through\\\",\\\"approach\\\":{\\\"self-signed\\\":1,\\\"expiration\\\":1,\\\"cn\\\":1,\\\"issuer\\\":1}},\\\"keyring\\\":1}\"}";
         Object object = JSONObject.parseObject(message, mapObject.getClass());
+
 //        System.out.println("补全之前 ===》 "+JSON.toJSONString(object));
         try {
             for (String[] strings : jobList) {
                 //参数的值
-                Object use = JsonParseUtil.getValue(object,strings[0]);
+                Object use = JsonParseUtil.getValue(object, strings[0]);
                 //补全的字段的值
-                Object appendTo = JsonParseUtil.getValue(object,strings[1]);
+                Object appendTo = JsonParseUtil.getValue(object, strings[1]);
+
                 if (strings[2].equals("current_timestamp")) {
                     JsonParseUtil.setValue(object, strings[1], getCurrentTime());
                 } else if (strings[2].equals("snowflake_id")) {
@@ -77,9 +82,9 @@ public class TransFormUtils {
                 } else if (strings[2].equals("geo_ip_detail")) {
                     JsonParseUtil.setValue(object, strings[1], getGeoIpDetail(use.toString()));
                 } else if (strings[2].equals("geo_asn")) {
-                    JsonParseUtil.setValue(object, strings[1], getGeoIpDetail(use.toString()));
+                    JsonParseUtil.setValue(object, strings[1], getGeoAsn(use.toString()));
                 } else if (strings[2].equals("radius_match")) {
-                    JsonParseUtil.setValue(object,strings[1],HBaseUtils.getAccount(use.toString()));
+                    JsonParseUtil.setValue(object, strings[1], radiusMatch(use.toString()));
                 } else if (strings[2].equals("geo_ip_country")) {
                     JsonParseUtil.setValue(object, strings[1], getGeoIpCountry(use.toString()));
                 } else if (strings[0].equals("http_host") && strings[2].equals("sub_domain") && use != null) {
@@ -88,11 +93,13 @@ public class TransFormUtils {
                     }
                 } else if (strings[0].equals("ssl_sni") && strings[2].equals("sub_domain") && use != null) {
                     if (appendTo == null || StringUtil.isBlank(appendTo.toString())) {
-                        JsonParseUtil.setValue(object,strings[1],getTopDomain(use.toString(),null));
+                        JsonParseUtil.setValue(object, strings[1], getTopDomain(use.toString(), null));
                     }
 
                 }
+
             }
+
 
             return JSONObject.toJSONString(object);
 //            System.out.println("补全之后 ===》 "+JSON.toJSONString(object));
@@ -104,6 +111,14 @@ public class TransFormUtils {
         }
     }
 
+
+    @Test
+    public void aaa() {
+        String sni = "203.187.160.131:9011";
+        System.out.println(getTopDomain(sni, null));
+        System.out.println(getTopDomain(null,sni));
+
+    }
 
     /**
      * 有sni通过sni获取域名，有host根据host获取域名
@@ -142,8 +157,8 @@ public class TransFormUtils {
     /**
      * 生成当前时间戳的操作
      */
-    private static long getCurrentTime() {
-        return (System.currentTimeMillis() / 1000);
+    private static int getCurrentTime() {
+        return (int)(System.currentTimeMillis() / 1000);
     }
 
     /**

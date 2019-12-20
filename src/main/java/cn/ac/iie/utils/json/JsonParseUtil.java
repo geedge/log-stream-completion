@@ -22,20 +22,26 @@ public class JsonParseUtil {
      */
 
     public static Class getClassName(String type) {
-        Class clazz = int.class;
+        Class clazz;
 
         switch (type) {
             case "int":
-                clazz = int.class;
+                clazz = Integer.class;
+                break;
+            case "String":
+                clazz = String.class;
+                break;
+            case "long":
+                clazz = long.class;
+                break;
+            case "Integer":
+                clazz = Integer.class;
                 break;
             case "double":
                 clazz = double.class;
                 break;
             case "float":
                 clazz = float.class;
-                break;
-            case "long":
-                clazz = long.class;
                 break;
             case "char":
                 clazz = char.class;
@@ -114,12 +120,25 @@ public class JsonParseUtil {
         for (Object field : fields) {
             String name = JSON.parseObject(field.toString()).get("name").toString();
             String type = JSON.parseObject(field.toString()).get("type").toString();
+//            if(
+//                    name.equals("dns_qr") ||
+//                    name.equals("dns_opcode") ||
+//                    name.equals("ssl_pinningst") ||
+//                    name.equals("ssl_intercept_state") ||
+//                    name.equals("ssl_cert_verify")
+//
+//            ){
+//                type="Integer";
+//            }
+
 
             //组合用来生成实体类的map
 
             map.put(name, getClassName(type));
 
         }
+
+
         return map;
     }
 
