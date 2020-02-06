@@ -1,20 +1,13 @@
 package cn.ac.iie.utils.system;
 
-import cn.ac.iie.common.FlowWriteConfig;
-import cn.ac.iie.utils.zookeeper.DistributedLock;
 import cn.ac.iie.utils.zookeeper.ZooKeeperLock;
 import cn.ac.iie.utils.zookeeper.ZookeeperUtils;
 import org.apache.log4j.Logger;
 
-/**
- * 雪花算法
- *
- * @author qidaijie
- */
+
 public class SnowflakeId {
     private static Logger logger = Logger.getLogger(SnowflakeId.class);
 
-    // ==============================Fields===========================================
     /**
      * 开始时间截 (2018-08-01 00:00:00) max 17years
      */
@@ -31,7 +24,8 @@ public class SnowflakeId {
     private final long dataCenterIdBits = 4L;
 
     /**
-     * 支持的最大机器id，结果是3 (这个移位算法可以很快的计算出几位二进制数所能表示的最大十进制数)
+     * 支持的最大机器id，结果是63 (这个移位算法可以很快的计算出几位二进制数所能表示的最大十进制数)
+     * M << n  = M * 2^n
      */
     private final long maxWorkerId = -1L ^ (-1L << workerIdBits);
 
@@ -90,52 +84,35 @@ public class SnowflakeId {
 
     private static ZookeeperUtils zookeeperUtils = new ZookeeperUtils();
 
-    static {
-        idWorker = new SnowflakeId();
+    private static void getSnowflakeldInstance(String zookeeperIp, String kafkaTopic, long dataCenterIdNum) {
+        idWorker = new SnowflakeId(zookeeperIp, kafkaTopic, dataCenterIdNum);
     }
-
-    //==============================Constructors=====================================
 
     /**
      * 构造函数
      */
-//    private SnowflakeId() {
-//        DistributedLock lock = new DistributedLock(FlowWriteConfig.ZOOKEEPER_SERVERS, "disLocks1");
-//        lock.lock();
-//        int tmpWorkerId = zookeeperUtils.modifyNode("/Snowflake/" + FlowWriteConfig.KAFKA_TOPIC);
-//        if (tmpWorkerId > maxWorkerId || tmpWorkerId < 0) {
-//            throw new IllegalArgumentException(String.format("worker Id can't be greater than %d or less than 0", maxWorkerId));
-//        }
-//        int dataCenterId = FlowWriteConfig.DATA_CENTER_ID_NUM;
-//        if (dataCenterId > maxDataCenterId || dataCenterId < 0) {
-//            throw new IllegalArgumentException(String.format("datacenter Id can't be greater than %d or less than 0", maxDataCenterId));
-//        }
-//        this.workerId = tmpWorkerId;
-//        this.dataCenterId = dataCenterId;
-//    }
-
-    private SnowflakeId() {
-        ZooKeeperLock lock = new ZooKeeperLock(FlowWriteConfig.ZOOKEEPER_SERVERS, "/locks", "disLocks");
+    private SnowflakeId(String zookeeperIp, String kafkaTopic, long dataCenterIdNum) {
+        ZooKeeperLock lock = new ZooKeeperLock(zookeeperIp, "/locks", "disLocks1");
         if (lock.lock()) {
-            int tmpWorkerId = zookeeperUtils.modifyNode("/Snowflake/" + FlowWriteConfig.KAFKA_TOPIC);
+            int tmpWorkerId = zookeeperUtils.modifyNode("/Snowflake/" + kafkaTopic, zookeeperIp);
             if (tmpWorkerId > maxWorkerId || tmpWorkerId < 0) {
                 throw new IllegalArgumentException(String.format("worker Id can't be greater than %d or less than 0", maxWorkerId));
             }
-            int dataCenterId = FlowWriteConfig.DATA_CENTER_ID_NUM;
-            if (dataCenterId > maxDataCenterId || dataCenterId < 0) {
-                throw new IllegalArgumentException(String.format("datacenter Id can't be greater than %d or less than 0", maxDataCenterId));
+            if (dataCenterIdNum > maxDataCenterId || dataCenterIdNum < 0) {
+                throw new IllegalArgumentException(String.format("datacenter Id can't be greater than %d or less than ", maxDataCenterId));
             }
             this.workerId = tmpWorkerId;
-            this.dataCenterId = dataCenterId;
+            this.dataCenterId = dataCenterIdNum;
             try {
                 lock.unlock();
-            } catch (InterruptedException e) {
+            } catch (InterruptedException ie) {
+                ie.printStackTrace();
+            } catch (Exception e) {
                 e.printStackTrace();
+                logger.error("This is not usual error!!!===>>>" + e + "<<<===");
             }
         }
     }
-
-    // ==============================Methods==========================================
 
     /**
      * 获得下一个ID (该方法是线程安全的)
@@ -204,9 +181,10 @@ public class SnowflakeId {
      *
      * @return
      */
-    public static Long generateId() {
+    public static Long generateId(String zookeeperIp, String kafkaTopic, long dataCenterIdNum) {
+        if (idWorker == null) {
+            getSnowflakeldInstance(zookeeperIp, kafkaTopic, dataCenterIdNum);
+        }
         return idWorker.nextId();
     }
-
-
 }

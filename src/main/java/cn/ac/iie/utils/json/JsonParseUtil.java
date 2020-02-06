@@ -145,6 +145,7 @@ public class JsonParseUtil {
 
     /**
      * 根据http链接获取schema，解析之后返回一个任务列表 (useList toList funcList)
+     *
      * @param http
      * @return
      */
@@ -167,25 +168,56 @@ public class JsonParseUtil {
                 Object format = JSON.parseObject(doc.toString()).get("format");
 
                 if (format != null) {
-                    Object functions = JSON.parseObject(format.toString()).get("functions");
-                    Object appendTo = JSON.parseObject(format.toString()).get("appendTo");
 
-                    if (appendTo != null) {
-                        String[] functionArray = functions.toString().split(",");
-                        String[] appendToArray = appendTo.toString().split(",");
+                    String functions = null;
+                    String appendTo = null;
+                    String params = null;
+                    Object functionsObj = JSON.parseObject(format.toString()).get("functions");
+                    Object appendToObj = JSON.parseObject(format.toString()).get("appendTo");
+                    Object paramObj = JSON.parseObject(format.toString()).get("param");
+
+                    if (functionsObj != null) {
+                        functions = functionsObj.toString();
+                    }
+
+                    if (appendToObj != null) {
+                        appendTo = appendToObj.toString();
+                    }
+                    if (paramObj != null) {
+                        params = paramObj.toString();
+                    }
+
+
+                    if (appendTo != null && params == null) {
+                        String[] functionArray = functions.split(",");
+                        String[] appendToArray = appendTo.split(",");
 
                         for (int i = 0; i < functionArray.length; i++) {
 //                            useList.add(name);
 //                            toList.add(appendToArray[i]);
 //                            funcList.add(functionArray[i]);
-                            list.add(new String[]{name, appendToArray[i], functionArray[i]});
+                            list.add(new String[]{name, appendToArray[i], functionArray[i],null});
 
                         }
-                    } else {
+                    }else if (appendTo != null && params != null){
+                        String[] functionArray = functions.split(",");
+                        String[] appendToArray = appendTo.split(",");
+                        String[] paramArray = params.split(",");
+
+                        for (int i = 0; i < functionArray.length; i++) {
+//                            useList.add(name);
+//                            toList.add(appendToArray[i]);
+//                            funcList.add(functionArray[i]);
+                            list.add(new String[]{name, appendToArray[i], functionArray[i],paramArray[i]});
+
+                        }
+                    }
+
+                    else {
 //                        useList.add(name);
 //                        funcList.add(functions.toString());
 //                        toList.add(name);
-                        list.add(new String[]{name, name, functions.toString()});
+                        list.add(new String[]{name, name, functions,params});
                     }
 
                 }

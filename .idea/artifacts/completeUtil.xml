@@ -1,0 +1,12 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="completeUtil">
+    <output-path>$PROJECT_DIR$/out/artifacts/completeUtil</output-path>
+    <root id="archive" name="completeUtil.jar">
+      <element id="file-copy" path="$PROJECT_DIR$/src/main/java/cn/ac/iie/utils/general/CompleteUtil.java" />
+      <element id="file-copy" path="$PROJECT_DIR$/src/main/java/cn/ac/iie/utils/hbase/HBaseUtils.java" />
+      <element id="file-copy" path="$PROJECT_DIR$/src/main/java/cn/ac/iie/utils/zookeeper/ZooKeeperLock.java" />
+      <element id="file-copy" path="$PROJECT_DIR$/src/main/java/cn/ac/iie/utils/zookeeper/ZookeeperUtils.java" />
+      <element id="file-copy" path="$PROJECT_DIR$/src/main/java/cn/ac/iie/utils/system/SnowflakeId.java" />
+    </root>
+  </artifact>
+</component>

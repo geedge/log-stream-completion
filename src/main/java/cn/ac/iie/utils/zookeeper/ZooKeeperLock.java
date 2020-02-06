@@ -1,5 +1,6 @@
 package cn.ac.iie.utils.zookeeper;
 
+import org.apache.log4j.Logger;
 import org.apache.zookeeper.*;
 import org.apache.zookeeper.data.Stat;
 
@@ -11,6 +12,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 public class ZooKeeperLock implements Watcher {
+    private static Logger logger = Logger.getLogger(ZooKeeperLock.class);
+
     private ZooKeeper zk = null;
     private String rootLockNode;            // 锁的根节点
     private String lockName;                // 竞争资源，用来生成子节点名称
@@ -33,13 +36,14 @@ public class ZooKeeperLock implements Watcher {
             }
         } catch (IOException | InterruptedException | KeeperException e) {
             e.printStackTrace();
+            logger.error("ZooKeeperLock Constructors ===>>>Node already exists!");
         }
     }
 
     // 2. 加锁方法，先尝试加锁，不能加锁则等待上一个锁的释放
     public boolean lock() {
         if (this.tryLock()) {
-            System.out.println("线程【" + Thread.currentThread().getName() + "】加锁（" + this.currentLock + "）成功！");
+            logger.warn("ZooKeeperLock method lock() ===>>> zkLockProcess[[[" + Thread.currentThread().getName() + "]]] addZkLock(" + this.currentLock + ")success！");
             return true;
         } else {
             return waitOtherLock(this.waitLock, this.sessionTimeout);
@@ -56,8 +60,7 @@ public class ZooKeeperLock implements Watcher {
             // 创建锁节点（临时有序节点）
             this.currentLock = zk.create(this.rootLockNode + "/" + this.lockName + split, new byte[0],
                     ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL_SEQUENTIAL);
-            System.out.println("线程【" + Thread.currentThread().getName()
-                    + "】创建锁节点（" + this.currentLock + "）成功，开始竞争...");
+            logger.warn("ZooKeeperLock method tryLock() ===>>> zkLockProcess[[[" + Thread.currentThread().getName() + "]]] create zkLockNode(" + this.currentLock + ")success，begin to election...");
             // 取所有子节点
             List<String> nodes = zk.getChildren(this.rootLockNode, false);
             // 取所有竞争lockName的锁
@@ -90,18 +93,15 @@ public class ZooKeeperLock implements Watcher {
             String waitLockNode = this.rootLockNode + "/" + waitLock;
             Stat stat = zk.exists(waitLockNode, true);
             if (null != stat) {
-                System.out.println("线程【" + Thread.currentThread().getName()
-                        + "】锁（" + this.currentLock + "）加锁失败，等待锁（" + waitLockNode + "）释放...");
+                logger.error("ZooKeeperLock method waitOtherLock() ===>>> zkLockProcess[[[" + Thread.currentThread().getName() + "]]] zkLock(" + this.currentLock + ")addZkLock fail,wait lock(" + waitLockNode + ")release...");
                 // 设置计数器，使用计数器阻塞线程
                 this.countDownLatch = new CountDownLatch(1);
                 islock = this.countDownLatch.await(sessionTimeout, TimeUnit.MILLISECONDS);
                 this.countDownLatch = null;
                 if (islock) {
-                    System.out.println("线程【" + Thread.currentThread().getName() + "】锁（"
-                            + this.currentLock + "）加锁成功，锁（" + waitLockNode + "）已经释放");
+                    logger.warn("ZooKeeperLock method waitOtherLock() ===>>> zkLockProcess[[[" + Thread.currentThread().getName() + "]]] zkLock(" + this.currentLock + ")addZkLock success,lock(" + waitLockNode + ")release over.");
                 } else {
-                    System.out.println("线程【" + Thread.currentThread().getName() + "】锁（"
-                            + this.currentLock + "）加锁失败...");
+                    logger.error("ZooKeeperLock method waitOtherLock() ===>>> zkLockProcess[[[" + Thread.currentThread().getName() + "]]] zkLock(" + this.currentLock + "addZkLock fail...");
                 }
             } else {
                 islock = true;
@@ -117,7 +117,7 @@ public class ZooKeeperLock implements Watcher {
         try {
             Stat stat = zk.exists(this.currentLock, false);
             if (null != stat) {
-                System.out.println("线程【" + Thread.currentThread().getName() + "】释放锁 " + this.currentLock);
+                logger.warn("ZooKeeperLock method unlock() ===>>> zkLockProcess[[[" + Thread.currentThread().getName() + "]]] free zkLock " + this.currentLock);
                 zk.delete(this.currentLock, -1);
                 this.currentLock = null;
             }
@@ -136,35 +136,5 @@ public class ZooKeeperLock implements Watcher {
             this.countDownLatch.countDown();
         }
     }
-
-
-    public static void doSomething() {
-
-    }
-
-    public static void main(String[] args) {
-        Runnable runnable = new Runnable() {
-            @Override
-            public void run() {
-                ZooKeeperLock lock = null;
-                lock = new ZooKeeperLock("192.168.40.119:2181", "/locks", "test1");
-                if (lock.lock()) {
-                    doSomething();
-                    try {
-//                        Thread.sleep(1000);
-                        lock.unlock();
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        };
-
-        for (int i = 0; i < 10; i++) {
-            Thread t = new Thread(runnable);
-            t.start();
-        }
-    }
-
 
 }

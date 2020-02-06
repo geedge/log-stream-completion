@@ -39,7 +39,8 @@ public class SecurityCompletionBolt extends BaseBasicBolt {
     public void execute(Tuple tuple, BasicOutputCollector basicOutputCollector) {
         try {
             if (TupleUtils.isTick(tuple)) {
-                HBaseUtils.change();
+                HBaseUtils hBaseUtils = new HBaseUtils(FlowWriteConfig.HBASE_ZOOKEEPER_SERVERS, FlowWriteConfig.HBASE_TABLE_NAME);
+                hBaseUtils.change();
             } else {
                 String message = tuple.getString(0);
                 if (StringUtil.isNotBlank(message)) {
