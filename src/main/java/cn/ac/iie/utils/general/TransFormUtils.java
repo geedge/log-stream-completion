@@ -2,20 +2,16 @@ package cn.ac.iie.utils.general;
 
 
 import cn.ac.iie.common.FlowWriteConfig;
-import cn.ac.iie.utils.hbase.HBaseUtils;
 import cn.ac.iie.utils.json.JsonParseUtil;
-import cn.ac.iie.utils.system.SnowflakeId;
 import com.alibaba.fastjson.JSONObject;
-import com.google.common.net.InternetDomainName;
+import com.zdjizhi.utils.FormatUtils;
 import com.zdjizhi.utils.IpLookup;
 import com.zdjizhi.utils.StringUtil;
 import org.apache.log4j.Logger;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
-import java.util.regex.Pattern;
 
-import static cn.ac.iie.utils.general.CompleteUtil.*;
 
 
 /**
@@ -27,6 +23,16 @@ import static cn.ac.iie.utils.general.CompleteUtil.*;
 
 public class TransFormUtils {
     private static Logger logger = Logger.getLogger(TransFormUtils.class);
+
+//    private static IpLookup ipLookup = FormatUtils.getIpLookup(FlowWriteConfig.IP_LIBRARY);
+
+    private static IpLookup ipLookup = new IpLookup.Builder(false)
+            .loadDataFileV4(FlowWriteConfig.IP_LIBRARY + "Kazakhstan.mmdb")
+            .loadDataFileV6(FlowWriteConfig.IP_LIBRARY + "Kazakhstan.mmdb")
+            .loadAsnDataFileV4(FlowWriteConfig.IP_LIBRARY + "asn_v4.mmdb")
+            .loadAsnDataFileV6(FlowWriteConfig.IP_LIBRARY + "asn_v6.mmdb")
+            .build();
+
 
     //在内存中加载反射类用的map
     private static HashMap<String, Class> map = JsonParseUtil.getMapFromhttp(FlowWriteConfig.SCHEMA_HTTP);
@@ -42,8 +48,6 @@ public class TransFormUtils {
      * @return 补全后的日志
      */
     public static String dealCommonMessage(String message) {
-
-
 
         Object object = JSONObject.parseObject(message, mapObject.getClass());
 
@@ -64,26 +68,26 @@ public class TransFormUtils {
 
 
                 if (function.equals("current_timestamp")) {
-                    JsonParseUtil.setValue(object, strings[1], getCurrentTime());
+                    JsonParseUtil.setValue(object, strings[1], FormatUtils.getCurrentTime());
                 } else if (function.equals("snowflake_id")) {
-                    JsonParseUtil.setValue(object, strings[1], getSnowflakeId(FlowWriteConfig.ZOOKEEPER_SERVERS,FlowWriteConfig.KAFKA_TOPIC,FlowWriteConfig.DATA_CENTER_ID_NUM));
+                    JsonParseUtil.setValue(object, strings[1], FormatUtils.getSnowflakeId(FlowWriteConfig.ZOOKEEPER_SERVERS,FlowWriteConfig.KAFKA_TOPIC,FlowWriteConfig.DATA_CENTER_ID_NUM));
                 } else if (function.equals("geo_ip_detail")) {
-                    JsonParseUtil.setValue(object, strings[1], getGeoIpDetail(name.toString()));
+                    JsonParseUtil.setValue(object, strings[1], FormatUtils.getGeoIpDetail(name.toString(),ipLookup));
                 } else if (function.equals("geo_asn")) {
-                    JsonParseUtil.setValue(object, strings[1], getGeoAsn(name.toString()));
+                    JsonParseUtil.setValue(object, strings[1], FormatUtils.getGeoAsn(name.toString(),ipLookup));
                 } else if (function.equals("radius_match")) {
-                    JsonParseUtil.setValue(object, strings[1], radiusMatch(name.toString(),FlowWriteConfig.HBASE_ZOOKEEPER_SERVERS,FlowWriteConfig.HBASE_TABLE_NAME));
+                    JsonParseUtil.setValue(object, strings[1], FormatUtils.radiusMatch(name.toString(),FlowWriteConfig.HBASE_ZOOKEEPER_SERVERS,FlowWriteConfig.HBASE_TABLE_NAME));
                 } else if (function.equals("geo_ip_country")) {
-                    JsonParseUtil.setValue(object, strings[1], getGeoIpCountry(name.toString()));
+                    JsonParseUtil.setValue(object, strings[1], FormatUtils.getGeoIpCountry(name.toString(),ipLookup));
                 } else if (function.equals("decode_of_base64") && param != null){
-                    JsonParseUtil.setValue(object, strings[1], base64Str(name.toString(),param.toString()));
+                    JsonParseUtil.setValue(object, strings[1], FormatUtils.base64Str(name.toString(),param.toString()));
                 } else if (name.equals("http_host") && function.equals("sub_domain")) {
                     if (appendTo == null || StringUtil.isBlank(appendTo.toString())) {
-                        JsonParseUtil.setValue(object, strings[1], getTopDomain(null, name.toString()));
+                        JsonParseUtil.setValue(object, strings[1], FormatUtils.getTopDomain(null, name.toString()));
                     }
                 } else if (name.equals("ssl_sni") && strings[2].equals("sub_domain")) {
                     if (appendTo == null || StringUtil.isBlank(appendTo.toString())) {
-                        JsonParseUtil.setValue(object, strings[1], getTopDomain(name.toString(), null));
+                        JsonParseUtil.setValue(object, strings[1], FormatUtils.getTopDomain(name.toString(), null));
                     }
 
                 }
@@ -105,8 +109,8 @@ public class TransFormUtils {
     @Test
     public void aaa() {
         String sni = "www.baidu.com";
-        System.out.println(getTopDomain(sni, null));
-        System.out.println(getTopDomain(null,sni));
+        System.out.println(FormatUtils.getTopDomain(sni, null));
+        System.out.println(FormatUtils.getTopDomain(null,sni));
 
     }
 }

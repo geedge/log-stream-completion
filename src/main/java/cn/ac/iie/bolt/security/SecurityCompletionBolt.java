@@ -1,8 +1,8 @@
 package cn.ac.iie.bolt.security;
 
 import cn.ac.iie.common.FlowWriteConfig;
-import cn.ac.iie.utils.hbase.HBaseUtils;
 import cn.ac.iie.utils.system.TupleUtils;
+import com.zdjizhi.utils.HBaseUtils;
 import com.zdjizhi.utils.StringUtil;
 import org.apache.log4j.Logger;
 import org.apache.storm.task.TopologyContext;
