@@ -37,7 +37,6 @@ public class CustomizedKafkaSpout extends BaseRichSpout {
         props.put("max.poll.records", 3000);
         props.put("max.partition.fetch.bytes", 31457280);
         props.put("auto.offset.reset", FlowWriteConfig.AUTO_OFFSET_RESET);
-
         props.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
         props.put("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
         return props;
