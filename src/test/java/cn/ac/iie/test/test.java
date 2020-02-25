@@ -1,22 +1,53 @@
 package cn.ac.iie.test;
 
+import cn.ac.iie.common.FlowWriteConfig;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.net.InternetDomainName;
+import com.zdjizhi.utils.*;
 import org.apache.log4j.Logger;
+import org.apache.storm.shade.com.google.common.collect.Lists;
+import org.junit.Test;
+
+import java.io.File;
+import java.util.ArrayList;
 
 public class test {
     private static Logger logger = Logger.getLogger(test.class);
 
-    public static void main(String[] args) {
-        String message = "{\"common_schema_type\":\"SSL\",\"ssl_sni\":\"www.myssl.cn\",\"common_server_ip\":\"101.37.81.250\",\"common_client_ip\":\"192.168.50.12\",\"common_server_port\":443,\"common_client_port\":51398,\"common_stream_dir\":3,\"common_address_type\":4,\"common_s2c_pkt_num\":1,\"common_s2c_byte_num\":0,\"common_c2s_pkt_num\":3,\"common_c2s_byte_num\":517,\"common_stream_trace_id\":7629423224647,\"common_l4_protocol\":\"IPv4_TCP\",\"common_address_list\":\"51398-443-192.168.50.12-101.37.81.250\",\"common_sled_ip\":\"192.168.40.161\",\"common_start_time\":1575008799,\"common_end_time\":1575008799,\"common_con_duration_ms\":0,\"common_policy_id\":282,\"common_service\":0,\"common_action\":128,\"common_user_region\":\"{\\\"protocol\\\":\\\"SSL\\\"}\"}";
-        JSONObject jsonObject = JSON.parseObject(message);
-        String common_server_ip = jsonObject.getString("common_server_ip");
-        String common_client_ip = jsonObject.getString("common_client_ip");
+    static ZookeeperUtils zookeeperUtils = new ZookeeperUtils();
 
-        jsonObject.put("common__recv_time",(System.currentTimeMillis() / 1000));
+//
+    @Test
+        public void test() throws InterruptedException {
+            File file = new File("D:\\123\\test.txt");
+            String zookeeperIp ="192.168.40.224:2181";
+            String kafkaTopic ="CONNECTION-RECORD-LOG";
 
-        System.out.println(jsonObject.toString());
+        System.out.println(zookeeperUtils.modifyNode("/Snowflake/" + kafkaTopic, zookeeperIp));
+        System.out.println(zookeeperUtils.modifyNode("/Snowflake/" + kafkaTopic, zookeeperIp));
+
+//            ArrayList<Long> list = Lists.newArrayList();
+//            for (int i = 1; i <= 500; i++) {
+//                ZooKeeperLock lock = new ZooKeeperLock(zookeeperIp, "/locks", "disLocks1");
+//                if (lock.lock()) {
+//                    int tmpWorkerId = zookeeperUtils.modifyNode("/Snowflake/" + kafkaTopic, zookeeperIp);
+//                    Long generateId = SnowflakeId.generateId(tmpWorkerId, 12);
+//                    System.err.println(generateId);
+//                    list.add(generateId);
+//                    lock.unlock();
+//                }
+//                if(i%5==0) {
+////                    fileWrite(list, file);
+//                    Thread.sleep(1000);
+//                }
+//            }
+//            System.err.println("第2个进程结束");
+
+//  FormatUtils build = new FormatUtils.Builder(false).build();
+//   long snowflakeId = build.getSnowflakeId("192.168.40.224:2181", "CONNECTION-RECORD-LOG", 12);
+//   System.err.println(snowflakeId);
+
 
     }
 }
