@@ -1,4 +1,3 @@
-/*
 package cn.ac.iie.test;
 
 
@@ -11,7 +10,7 @@ class RunnableDemo implements Runnable {
     private static ZookeeperUtils zookeeperUtils = new ZookeeperUtils();
 
     static {
-        zookeeperUtils.connectZookeeper();
+        zookeeperUtils.connectZookeeper("192.168.40.207:2181");
     }
 
     @Override
@@ -48,4 +47,3 @@ public class TestThread {
 
     }
 }
-*/

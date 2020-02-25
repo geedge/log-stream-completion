@@ -1,5 +1,7 @@
 package cn.ac.iie.utils.zookeeper;
 
+import cn.ac.iie.common.FlowWriteConfig;
+import cn.ac.iie.utils.system.SnowflakeId;
 import org.apache.log4j.Logger;
 import org.apache.zookeeper.*;
 import org.apache.zookeeper.data.Stat;
@@ -13,7 +15,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 
-
+/**
+ * @author qidaijie
+ */
 public class DistributedLock implements Lock, Watcher {
     private static Logger logger = Logger.getLogger(DistributedLock.class);
 
@@ -79,7 +83,7 @@ public class DistributedLock implements Lock, Watcher {
         }
         try {
             if (this.tryLock()) {
-                logger.warn(Thread.currentThread().getName() + " " + lockName + " is being locked......");
+                System.out.println(Thread.currentThread().getName() + " " + lockName + "获得了锁");
             } else {
                 // 等待锁
                 waitForLock(waitLock, sessionTimeout);
@@ -94,7 +98,7 @@ public class DistributedLock implements Lock, Watcher {
         try {
             String splitStr = "_lock_";
             if (lockName.contains(splitStr)) {
-                throw new LockException("locked name is error!!!");
+                throw new LockException("锁名有误");
             }
             // 创建临时有序节点
             currentLock = zk.create(ROOT_LOCK + "/" + lockName + splitStr, new byte[0],
@@ -181,6 +185,35 @@ public class DistributedLock implements Lock, Watcher {
 
         public LockException(Exception e) {
             super(e);
+        }
+    }
+
+    public static void main(String[] args) {
+        ZookeeperUtils zookeeperUtils = new ZookeeperUtils();
+
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                DistributedLock lock = null;
+                try {
+                    lock = new DistributedLock(FlowWriteConfig.ZOOKEEPER_SERVERS, "disLocks1");
+                    lock.lock();
+//                    System.out.println(SnowflakeId.generateId());
+                    System.out.println(1);
+                    Thread.sleep(3000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                } finally {
+                    if (lock != null) {
+                        lock.unlock();
+                    }
+                }
+            }
+        };
+
+        for (int i = 0; i < 10; i++) {
+            Thread t = new Thread(runnable);
+            t.start();
         }
     }
 }

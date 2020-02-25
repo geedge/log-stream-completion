@@ -1,6 +1,5 @@
-package cn.ac.iie.bolt.radius;
+package cn.ac.iie.bolt;
 
-import cn.ac.iie.common.FlowWriteConfig;
 import com.zdjizhi.utils.StringUtil;
 import org.apache.log4j.Logger;
 import org.apache.storm.task.TopologyContext;
@@ -13,17 +12,16 @@ import org.apache.storm.tuple.Values;
 
 import java.util.Map;
 
-import static cn.ac.iie.utils.general.TransFormUtils.dealCommonMessage;
+import static cn.ac.iie.utils.general.TransFormUtils.getJsonMessage;
 
 /**
  * 通联关系日志补全
  *
  * @author qidaijie
  */
-public class RadiusCompletionBolt extends BaseBasicBolt {
-
-    private final static Logger logger = Logger.getLogger(RadiusCompletionBolt.class);
-    private static final long serialVersionUID = -3657802387129063952L;
+public class ConnCompletionBolt extends BaseBasicBolt {
+    private static final long serialVersionUID = -1059151670138465894L;
+    private final static Logger logger = Logger.getLogger(ConnCompletionBolt.class);
 
     @Override
     public void prepare(Map stormConf, TopologyContext context) {
@@ -35,14 +33,12 @@ public class RadiusCompletionBolt extends BaseBasicBolt {
         try {
             String message = tuple.getString(0);
             if (StringUtil.isNotBlank(message)) {
-                basicOutputCollector.emit(new Values(dealCommonMessage(message)));
+                basicOutputCollector.emit(new Values(getJsonMessage(message)));
             }
         } catch (Exception e) {
-            logger.error(FlowWriteConfig.KAFKA_TOPIC + "接收/解析过程出现异常");
-            e.printStackTrace();
+            logger.error("接收解析过程出现异常", e);
         }
     }
-
 
     @Override
     public void declareOutputFields(OutputFieldsDeclarer outputFieldsDeclarer) {
