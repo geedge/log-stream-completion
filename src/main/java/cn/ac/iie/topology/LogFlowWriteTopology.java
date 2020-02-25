@@ -1,9 +1,13 @@
 package cn.ac.iie.topology;
 
 
-import cn.ac.iie.bolt.ConnCompletionBolt;
 import cn.ac.iie.bolt.NtcLogSendBolt;
-import cn.ac.iie.bolt.SummaryBolt;
+import cn.ac.iie.bolt.collect.CollectCompletedBolt;
+import cn.ac.iie.bolt.radius.RadiusCompletionBolt;
+import cn.ac.iie.bolt.security.SecurityCompletionBolt;
+
+import cn.ac.iie.bolt.proxy.ProxyCompletionBolt;
+
 import cn.ac.iie.common.FlowWriteConfig;
 import cn.ac.iie.spout.CustomizedKafkaSpout;
 import org.apache.log4j.Logger;
@@ -58,9 +62,28 @@ public class LogFlowWriteTopology {
     private void buildTopology() {
         builder = new TopologyBuilder();
         builder.setSpout("LogFlowWriteSpout", new CustomizedKafkaSpout(), FlowWriteConfig.SPOUT_PARALLELISM);
-        builder.setBolt("ConnCompletionBolt", new ConnCompletionBolt(), FlowWriteConfig.DATACENTER_BOLT_PARALLELISM).localOrShuffleGrouping("LogFlowWriteSpout");
-        builder.setBolt("NtcLogSendBolt", new NtcLogSendBolt(), FlowWriteConfig.KAFKA_BOLT_PARALLELISM).localOrShuffleGrouping("ConnCompletionBolt");
-//        builder.setBolt("SummaryBolt", new SummaryBolt(), 1).localOrShuffleGrouping("NtcLogSendBolt");
+
+        switch (FlowWriteConfig.KAFKA_TOPIC) {
+            case "PROXY-EVENT-LOG":
+                builder.setBolt("ProxyCompletionBolt", new ProxyCompletionBolt(), FlowWriteConfig.DATACENTER_BOLT_PARALLELISM).localOrShuffleGrouping("LogFlowWriteSpout");
+                builder.setBolt("NtcLogSendBolt", new NtcLogSendBolt(), FlowWriteConfig.KAFKA_BOLT_PARALLELISM).localOrShuffleGrouping("ProxyCompletionBolt");
+                break;
+            case "RADIUS-RECORD-LOG":
+                builder.setBolt("RadiusCompletionBolt", new RadiusCompletionBolt(), FlowWriteConfig.DATACENTER_BOLT_PARALLELISM).localOrShuffleGrouping("LogFlowWriteSpout");
+                builder.setBolt("NtcLogSendBolt", new NtcLogSendBolt(), FlowWriteConfig.KAFKA_BOLT_PARALLELISM).localOrShuffleGrouping("RadiusCompletionBolt");
+                break;
+            case "CONNECTION-RECORD-LOG":
+                builder.setBolt("CollectCompletedBolt", new CollectCompletedBolt(), FlowWriteConfig.DATACENTER_BOLT_PARALLELISM).localOrShuffleGrouping("LogFlowWriteSpout");
+                builder.setBolt("NtcLogSendBolt", new NtcLogSendBolt(), FlowWriteConfig.KAFKA_BOLT_PARALLELISM).localOrShuffleGrouping("CollectCompletedBolt");
+                break;
+            case "SECURITY-EVENT-LOG":
+                builder.setBolt("SecurityCompletionBolt", new SecurityCompletionBolt(), FlowWriteConfig.DATACENTER_BOLT_PARALLELISM).localOrShuffleGrouping("LogFlowWriteSpout");
+                builder.setBolt("NtcLogSendBolt", new NtcLogSendBolt(), FlowWriteConfig.KAFKA_BOLT_PARALLELISM).localOrShuffleGrouping("SecurityCompletionBolt");
+                break;
+
+            default:
+        }
+
     }
 
     public static void main(String[] args) throws Exception {

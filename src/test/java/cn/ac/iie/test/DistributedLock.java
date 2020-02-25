@@ -10,7 +10,7 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 
 import cn.ac.iie.common.FlowWriteConfig;
-import cn.ac.iie.utils.zookeeper.ZookeeperUtils;
+import com.zdjizhi.utils.ZookeeperUtils;
 import org.apache.log4j.Logger;
 import org.apache.zookeeper.*;
 import org.apache.zookeeper.data.Stat;
@@ -183,7 +183,7 @@ public class DistributedLock implements Lock, Watcher {
                 try {
                     lock = new DistributedLock(FlowWriteConfig.ZOOKEEPER_SERVERS, "disLocks1");
                     lock.lock();
-                    zookeeperUtils.modifyNode("/Snowflake/" + FlowWriteConfig.KAFKA_TOPIC);
+                    zookeeperUtils.modifyNode("/Snowflake/" + FlowWriteConfig.KAFKA_TOPIC,FlowWriteConfig.ZOOKEEPER_SERVERS);
                 } finally {
                     if (lock != null) {
                         lock.unlock();

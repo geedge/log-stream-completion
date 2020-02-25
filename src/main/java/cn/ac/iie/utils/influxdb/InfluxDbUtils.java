@@ -46,6 +46,22 @@ public class InfluxDbUtils {
     }
 
     /**
+     * 记录对准失败次数-即内存中没有对应的key
+     *
+     * @param failure 对准失败量
+     */
+    public static void sendHBaseFailure(int failure) {
+        if (failure != 0) {
+            InfluxDB client = InfluxDBFactory.connect(FlowWriteConfig.INFLUX_IP, FlowWriteConfig.INFLUX_USERNAME, FlowWriteConfig.INFLUX_PASSWORD);
+            Point point1 = Point.measurement("sendHBaseFailure")
+                    .tag("topic", FlowWriteConfig.KAFKA_TOPIC)
+                    .field("failure", failure)
+                    .build();
+            client.write("BusinessMonitor", "", point1);
+        }
+    }
+
+    /**
      * 获取本机IP
      *
      * @return IP地址
