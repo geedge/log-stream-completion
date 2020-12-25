@@ -1,8 +1,9 @@
-package cn.ac.iie.utils.system;
+package cn.ac.iie.utils.general;
 
 import cn.ac.iie.common.FlowWriteConfig;
 import cn.ac.iie.utils.zookeeper.DistributedLock;
 import cn.ac.iie.utils.zookeeper.ZookeeperUtils;
+import com.zdjizhi.utils.ZooKeeperLock;
 import org.apache.log4j.Logger;
 
 /**
@@ -13,11 +14,18 @@ import org.apache.log4j.Logger;
 public class SnowflakeId {
     private static Logger logger = Logger.getLogger(SnowflakeId.class);
 
-    // ==============================Fields===========================================
     /**
-     * 开始时间截 (2018-08-01 00:00:00) max 17years
+     * 共64位 第一位为符号位 默认0
+     * 时间戳 39位(17 year), centerId:(关联每个环境或任务数) :7位(0-127),
+     * workerId(关联进程):6(0-63) ,序列号：11位(2047/ms)
+     *
+     * 序列号 /ms = (-1L ^ (-1L << 11))
+     * 最大使用年 = (1L << 39) / (1000L * 60 * 60 * 24 * 365)
      */
-    private final long twepoch = 1564588800000L;
+    /**
+     * 开始时间截 (2020-11-14 00:00:00) max 17years
+     */
+    private final long twepoch = 1605283200000L;
 
     /**
      * 机器id所占的位数
@@ -27,22 +35,23 @@ public class SnowflakeId {
     /**
      * 数据标识id所占的位数
      */
-    private final long dataCenterIdBits = 4L;
+    private final long dataCenterIdBits = 7L;
 
     /**
-     * 支持的最大机器id，结果是3 (这个移位算法可以很快的计算出几位二进制数所能表示的最大十进制数)
+     * 支持的最大机器id，结果是63 (这个移位算法可以很快的计算出几位二进制数所能表示的最大十进制数)
+     * M << n  = M * 2^n
      */
     private final long maxWorkerId = -1L ^ (-1L << workerIdBits);
 
     /**
-     * 支持的最大数据标识id，结果是15
+     * 支持的最大数据标识id，结果是127
      */
     private final long maxDataCenterId = -1L ^ (-1L << dataCenterIdBits);
 
     /**
      * 序列在id中占的位数
      */
-    private final long sequenceBits = 14L;
+    private final long sequenceBits = 11L;
 
     /**
      * 机器ID向左移12位
@@ -60,7 +69,7 @@ public class SnowflakeId {
     private final long timestampLeftShift = sequenceBits + workerIdBits + dataCenterIdBits;
 
     /**
-     * 生成序列的掩码，这里为16383
+     * 生成序列的掩码，这里为2047
      */
     private final long sequenceMask = -1L ^ (-1L << sequenceBits);
 
@@ -70,12 +79,12 @@ public class SnowflakeId {
     private long workerId;
 
     /**
-     * 数据中心ID(0~15)
+     * 数据中心ID(0~127)
      */
     private long dataCenterId;
 
     /**
-     * 毫秒内序列(0~16383)
+     * 毫秒内序列(0~2047)
      */
     private long sequence = 0L;
 
@@ -85,12 +94,18 @@ public class SnowflakeId {
     private long lastTimestamp = -1L;
 
 
+    /**
+     * 设置允许时间回拨的最大限制10s
+     */
+    private static final long rollBackTime = 10000L;
+
+
     private static SnowflakeId idWorker;
 
     private static ZookeeperUtils zookeeperUtils = new ZookeeperUtils();
 
     static {
-        idWorker = new SnowflakeId();
+            idWorker = new SnowflakeId(FlowWriteConfig.ZOOKEEPER_SERVERS, FlowWriteConfig.DATA_CENTER_ID_NUM);
     }
 
     //==============================Constructors=====================================
@@ -98,19 +113,46 @@ public class SnowflakeId {
     /**
      * 构造函数
      */
-    private SnowflakeId() {
+    private SnowflakeId(String zookeeperIp, long dataCenterIdNum) {
         DistributedLock lock = new DistributedLock(FlowWriteConfig.ZOOKEEPER_SERVERS, "disLocks1");
+        try {
         lock.lock();
-        int tmpWorkerId = zookeeperUtils.modifyNode("/Snowflake/" + FlowWriteConfig.KAFKA_TOPIC);
+        int tmpWorkerId = zookeeperUtils.modifyNode("/Snowflake/" + "worker" + dataCenterIdNum, zookeeperIp);
         if (tmpWorkerId > maxWorkerId || tmpWorkerId < 0) {
             throw new IllegalArgumentException(String.format("worker Id can't be greater than %d or less than 0", maxWorkerId));
         }
-        int dataCenterId = FlowWriteConfig.DATA_CENTER_ID_NUM;
-        if (dataCenterId > maxDataCenterId || dataCenterId < 0) {
-            throw new IllegalArgumentException(String.format("datacenter Id can't be greater than %d or less than 0", maxDataCenterId));
+        if (dataCenterIdNum > maxDataCenterId || dataCenterIdNum < 0) {
+            throw new IllegalArgumentException(String.format("datacenter Id can't be greater than %d or less than ", maxDataCenterId));
         }
         this.workerId = tmpWorkerId;
-        this.dataCenterId = dataCenterId;
+        this.dataCenterId = dataCenterIdNum;
+        } catch (Exception e) {
+            e.printStackTrace();
+            logger.error("This is not usual error!!!===>>>" + e + "<<<===");
+        }finally {
+                lock.unlock();
+        }
+
+//        ZooKeeperLock lock = new ZooKeeperLock(zookeeperIp, "/locks", "disLocks1");
+//        if (lock.lock()) {
+//            int tmpWorkerId = zookeeperUtils.modifyNode("/Snowflake/" + "worker" + dataCenterIdNum, zookeeperIp);
+//            if (tmpWorkerId > maxWorkerId || tmpWorkerId < 0) {
+//                throw new IllegalArgumentException(String.format("worker Id can't be greater than %d or less than 0", maxWorkerId));
+//            }
+//            if (dataCenterIdNum > maxDataCenterId || dataCenterIdNum < 0) {
+//                throw new IllegalArgumentException(String.format("datacenter Id can't be greater than %d or less than ", maxDataCenterId));
+//            }
+//            this.workerId = tmpWorkerId;
+//            this.dataCenterId = dataCenterIdNum;
+//            try {
+//                lock.unlock();
+//            } catch (InterruptedException ie) {
+//                ie.printStackTrace();
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//                logger.error("This is not usual error!!!===>>>" + e + "<<<===");
+//            }
+//        }
     }
 
     // ==============================Methods==========================================
@@ -122,7 +164,10 @@ public class SnowflakeId {
      */
     private synchronized long nextId() {
         long timestamp = timeGen();
-
+        //设置一个允许回拨限制时间，系统时间回拨范围在rollBackTime内可以等待校准
+        if (lastTimestamp - timestamp > 0 && lastTimestamp - timestamp < rollBackTime) {
+            timestamp = tilNextMillis(lastTimestamp);
+        }
         //如果当前时间小于上一次ID生成的时间戳，说明系统时钟回退过这个时候应当抛出异常
         if (timestamp < lastTimestamp) {
             throw new RuntimeException(

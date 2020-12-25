@@ -1,9 +1,8 @@
 package cn.ac.iie.topology;
 
 
-import cn.ac.iie.bolt.ConnCompletionBolt;
-import cn.ac.iie.bolt.NtcLogSendBolt;
-import cn.ac.iie.bolt.SummaryBolt;
+import cn.ac.iie.bolt.CompletionBolt;
+import cn.ac.iie.bolt.kafka.LogSendBolt;
 import cn.ac.iie.common.FlowWriteConfig;
 import cn.ac.iie.spout.CustomizedKafkaSpout;
 import org.apache.log4j.Logger;
@@ -31,10 +30,10 @@ public class LogFlowWriteTopology {
 
     private LogFlowWriteTopology(String topologyName) {
         this.topologyName = topologyName;
-        topologyConfig = createTopologConfig();
+        topologyConfig = createTopologyConfig();
     }
 
-    private Config createTopologConfig() {
+    private Config createTopologyConfig() {
         Config conf = new Config();
         conf.setDebug(false);
         conf.setMessageTimeoutSecs(60);
@@ -56,33 +55,40 @@ public class LogFlowWriteTopology {
     }
 
     private void buildTopology() {
+        String need = "yes";
         builder = new TopologyBuilder();
         builder.setSpout("LogFlowWriteSpout", new CustomizedKafkaSpout(), FlowWriteConfig.SPOUT_PARALLELISM);
-        builder.setBolt("ConnCompletionBolt", new ConnCompletionBolt(), FlowWriteConfig.DATACENTER_BOLT_PARALLELISM).localOrShuffleGrouping("LogFlowWriteSpout");
-        builder.setBolt("NtcLogSendBolt", new NtcLogSendBolt(), FlowWriteConfig.KAFKA_BOLT_PARALLELISM).localOrShuffleGrouping("ConnCompletionBolt");
-//        builder.setBolt("SummaryBolt", new SummaryBolt(), 1).localOrShuffleGrouping("NtcLogSendBolt");
+        if (need.equals(FlowWriteConfig.LOG_NEED_COMPLETE)) {
+            builder.setBolt("LogCompletionBolt", new CompletionBolt(),
+                    FlowWriteConfig.COMPLETION_BOLT_PARALLELISM).localOrShuffleGrouping("LogFlowWriteSpout");
+            builder.setBolt("CompletionLogSendBolt", new LogSendBolt(),
+                    FlowWriteConfig.KAFKA_BOLT_PARALLELISM).localOrShuffleGrouping("LogCompletionBolt");
+        } else {
+            builder.setBolt("LogSendBolt", new LogSendBolt(),
+                    FlowWriteConfig.KAFKA_BOLT_PARALLELISM).localOrShuffleGrouping("LogFlowWriteSpout");
+        }
     }
 
     public static void main(String[] args) throws Exception {
-        LogFlowWriteTopology csst = null;
+        LogFlowWriteTopology flowWriteTopology;
         boolean runLocally = true;
         String parameter = "remote";
         int size = 2;
         if (args.length >= size && parameter.equalsIgnoreCase(args[1])) {
             runLocally = false;
-            csst = new LogFlowWriteTopology(args[0]);
+            flowWriteTopology = new LogFlowWriteTopology(args[0]);
         } else {
-            csst = new LogFlowWriteTopology();
+            flowWriteTopology = new LogFlowWriteTopology();
         }
 
-        csst.buildTopology();
+        flowWriteTopology.buildTopology();
 
         if (runLocally) {
             logger.info("执行本地模式...");
-            csst.runLocally();
+            flowWriteTopology.runLocally();
         } else {
             logger.info("执行远程部署模式...");
-            csst.runRemotely();
+            flowWriteTopology.runRemotely();
         }
     }
 }

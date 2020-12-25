@@ -1,7 +1,5 @@
 package cn.ac.iie.utils.zookeeper;
 
-import cn.ac.iie.common.FlowWriteConfig;
-import org.apache.commons.lang3.RandomUtils;
 import org.apache.log4j.Logger;
 import org.apache.zookeeper.*;
 import org.apache.zookeeper.data.ACL;
@@ -13,9 +11,12 @@ import java.util.concurrent.CountDownLatch;
 
 /**
  * @author qidaijie
+ * @Package cn.ac.iie.utils.zookeeper
+ * @Description:
+ * @date 2020/11/1411:28
  */
 public class ZookeeperUtils implements Watcher {
-    private static Logger logger = Logger.getLogger(ZookeeperUtils.class);
+    private static Logger logger = Logger.getLogger(com.zdjizhi.utils.ZookeeperUtils.class);
 
     private ZooKeeper zookeeper;
 
@@ -25,7 +26,7 @@ public class ZookeeperUtils implements Watcher {
 
     @Override
     public void process(WatchedEvent event) {
-        if (event.getState() == Watcher.Event.KeeperState.SyncConnected) {
+        if (event.getState() == Event.KeeperState.SyncConnected) {
             countDownLatch.countDown();
         }
     }
@@ -36,15 +37,14 @@ public class ZookeeperUtils implements Watcher {
      *
      * @param path 节点路径
      */
-    public int modifyNode(String path) {
-        createNode("/Snowflake", null, ZooDefs.Ids.OPEN_ACL_UNSAFE);
-        createNode("/Snowflake/" + FlowWriteConfig.KAFKA_TOPIC, "0".getBytes(), ZooDefs.Ids.OPEN_ACL_UNSAFE);
-        int workerId;
+    public int modifyNode(String path, String zookeeperIp) {
+        createNode(path, "0".getBytes(), ZooDefs.Ids.OPEN_ACL_UNSAFE, zookeeperIp);
+        int workerId = 0;
         try {
-            connectZookeeper();
+            connectZookeeper(zookeeperIp);
             Stat stat = zookeeper.exists(path, true);
             workerId = Integer.parseInt(getNodeDate(path));
-            if (workerId > 55) {
+            if (workerId > 63) {
                 workerId = 0;
                 zookeeper.setData(path, "1".getBytes(), stat.getVersion());
             } else {
@@ -56,22 +56,22 @@ public class ZookeeperUtils implements Watcher {
                 }
             }
         } catch (KeeperException | InterruptedException e) {
-            e.printStackTrace();
-            workerId = RandomUtils.nextInt(56, 63);
+            logger.error("modify error Can't modify," + e.getMessage());
         } finally {
             closeConn();
         }
-        logger.error("工作ID是：" + workerId);
+        logger.warn("workerID is：" + workerId);
         return workerId;
     }
 
     /**
      * 连接zookeeper
      *
+     * @param host 地址
      */
-    private void connectZookeeper() {
+    public void connectZookeeper(String host) {
         try {
-            zookeeper = new ZooKeeper(FlowWriteConfig.ZOOKEEPER_SERVERS, SESSION_TIME_OUT, this);
+            zookeeper = new ZooKeeper(host, SESSION_TIME_OUT, this);
             countDownLatch.await();
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
@@ -81,7 +81,7 @@ public class ZookeeperUtils implements Watcher {
     /**
      * 关闭连接
      */
-    private void closeConn() {
+    public void closeConn() {
         try {
             if (zookeeper != null) {
                 zookeeper.close();
@@ -97,7 +97,7 @@ public class ZookeeperUtils implements Watcher {
      * @param path 节点路径
      * @return 内容/异常null
      */
-    private String getNodeDate(String path) {
+    public String getNodeDate(String path) {
         String result = null;
         Stat stat = new Stat();
         try {
@@ -115,14 +115,18 @@ public class ZookeeperUtils implements Watcher {
      * @param date 节点所存储的数据的byte[]
      * @param acls 控制权限策略
      */
-    private void createNode(String path, byte[] date, List<ACL> acls) {
+    public void createNode(String path, byte[] date, List<ACL> acls, String zookeeperIp) {
         try {
-            connectZookeeper();
+            connectZookeeper(zookeeperIp);
             Stat exists = zookeeper.exists(path, true);
             if (exists == null) {
+                Stat existsSnowflakeld = zookeeper.exists("/Snowflake", true);
+                if (existsSnowflakeld == null) {
+                    zookeeper.create("/Snowflake", null, acls, CreateMode.PERSISTENT);
+                }
                 zookeeper.create(path, date, acls, CreateMode.PERSISTENT);
             } else {
-                logger.warn("Node already exists!,Don't need to create");
+                logger.warn("Node already exists ! Don't need to create");
             }
         } catch (KeeperException | InterruptedException e) {
             e.printStackTrace();
@@ -130,5 +134,4 @@ public class ZookeeperUtils implements Watcher {
             closeConn();
         }
     }
-
 }
