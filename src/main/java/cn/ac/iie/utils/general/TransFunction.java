@@ -14,12 +14,15 @@ import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author qidaijie
  */
 class TransFunction {
     private static Logger logger = Logger.getLogger(TransFunction.class);
+    private static final Pattern pattern = Pattern.compile("[0-9]*");
 
     /**
      * 生成当前时间戳的操作
@@ -156,14 +159,13 @@ class TransFunction {
     }
 
     /**
-     * IF函数实现，解析日志构建三目运算
+     * IF函数实现，解析日志构建三目运算;包含判断是否为数字若为数字则转换为long类型返回结果。
      *
      * @param object  内存实体类
      * @param ifParam 字段名/普通字符串
      * @return resultA or resultB or ""
      */
-    static String condition(Object object, String ifParam) {
-        String result = "";
+    static Object condition(Object object, String ifParam) {
         try {
             String[] split = ifParam.split(FlowWriteConfig.FORMAT_SPLITTER);
             String[] norms = split[0].split(FlowWriteConfig.IF_CONDITION_SPLITTER);
@@ -172,13 +174,19 @@ class TransFunction {
                 if (split.length == FlowWriteConfig.IF_PARAM_LENGTH) {
                     String resultA = isJsonValue(object, split[1]);
                     String resultB = isJsonValue(object, split[2]);
-                    result = (Integer.parseInt(direction) == Integer.parseInt(norms[1])) ? resultA : resultB;
+                    String result = (Integer.parseInt(direction) == Integer.parseInt(norms[1])) ? resultA : resultB;
+                    Matcher isNum = pattern.matcher(result);
+                    if (isNum.matches()) {
+                        return Long.parseLong(result);
+                    } else {
+                        return result;
+                    }
                 }
             }
         } catch (Exception e) {
             logger.error("IF 函数执行异常,异常信息:" + e);
             e.printStackTrace();
         }
-        return result;
+        return null;
     }
 }
