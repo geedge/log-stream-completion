@@ -4,7 +4,7 @@
 
     <groupId>cn.ac.iie</groupId>
     <artifactId>log-stream-completion-schema</artifactId>
-    <version>v3.20.12.12-ack-ratelimit-con</version>
+    <version>v3.21.01.02-ack-ratelimit-set</version>
     <packaging>jar</packaging>
 
     <name>log-stream-completion-schema</name>

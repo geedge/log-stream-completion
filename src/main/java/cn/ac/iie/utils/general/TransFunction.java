@@ -189,4 +189,24 @@ class TransFunction {
         }
         return null;
     }
+
+    /**
+     * 设置固定值函数 若为数字则转为long返回
+     * @param param 默认值
+     * @return 返回数字或字符串
+     */
+    static Object setValue(String param) {
+        try {
+            Matcher isNum = pattern.matcher(param);
+            if (isNum.matches()) {
+                return Long.parseLong(param);
+            } else {
+                return param;
+            }
+        } catch (Exception e) {
+            logger.error("SetValue 函数异常，异常信息：" + e);
+            e.printStackTrace();
+        }
+        return null;
+    }
 }

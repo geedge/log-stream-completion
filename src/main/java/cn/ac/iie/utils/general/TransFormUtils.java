@@ -128,6 +128,11 @@ public class TransFormUtils {
                     JsonParseUtil.setValue(object, appendToKeyName, getGeoIpCountry(ipLookup, name.toString()));
                 }
                 break;
+            case "set_value":
+                if (name != null && param != null) {
+                    JsonParseUtil.setValue(object, appendToKeyName, setValue(param));
+                }
+                break;
             case "get_value":
                 if (name != null) {
                     JsonParseUtil.setValue(object, appendToKeyName, name);

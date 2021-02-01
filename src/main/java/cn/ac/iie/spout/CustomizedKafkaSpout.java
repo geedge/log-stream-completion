@@ -38,31 +38,7 @@ public class CustomizedKafkaSpout extends BaseRichSpout {
         props.put("max.poll.records", 3000);
         props.put("max.partition.fetch.bytes", 31457280);
         props.put("auto.offset.reset", FlowWriteConfig.AUTO_OFFSET_RESET);
-//        switch (FlowWriteConfig.KAFKA_TOPIC) {
-//            case "PROXY-EVENT-LOG":
-//                props.put("client.id", "proxy");
-//                break;
-//            case "RADIUS-RECORD-LOG":
-//                props.put("client.id", "radius");
-//                break;
-//            case "CONNECTION-RECORD-LOG":
-//                props.put("client.id", "connection");
-//                break;
-//            case "SECURITY-EVENT-LOG":
-//                props.put("client.id", "security");
-//                break;
-//            case "CONNECTION-SKETCH":
-//                props.put("client.id", "sketch");
-//                break;
-//            case "ACTIVE-DEFENCE-EVENT-LOG":
-//                props.put("client.id", "active");
-//                break;
-//            case "SYS-PACKET-CAPTURE-LOG":
-//                props.put("client.id", "packet");
-//                break;
-//
-//            default:
-//        }
+
         props.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
         props.put("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
 
