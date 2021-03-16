@@ -33,13 +33,6 @@ public class FlowWriteConfig {
     public static final String LOG_NEED_COMPLETE = FlowWriteConfigurations.getStringProperty(0, "log.need.complete");
 
     /**
-     * influxDB
-     */
-    public static final String INFLUX_IP = FlowWriteConfigurations.getStringProperty(0, "influx.ip");
-    public static final String INFLUX_USERNAME = FlowWriteConfigurations.getStringProperty(0, "influx.username");
-    public static final String INFLUX_PASSWORD = FlowWriteConfigurations.getStringProperty(0, "influx.password");
-
-    /**
      * kafka
      */
     public static final String INPUT_KAFKA_SERVERS = FlowWriteConfigurations.getStringProperty(0, "input.kafka.servers");

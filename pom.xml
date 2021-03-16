@@ -109,7 +109,7 @@
             <groupId>org.apache.storm</groupId>
             <artifactId>storm-core</artifactId>
             <version>${storm.version}</version>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
             <exclusions>
                 <exclusion>
                     <artifactId>slf4j-log4j12</artifactId>
@@ -301,6 +301,12 @@
             <groupId>io.prometheus</groupId>
             <artifactId>simpleclient_pushgateway</artifactId>
             <version>0.9.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>cn.hutool</groupId>
+            <artifactId>hutool-all</artifactId>
+            <version>5.5.2</version>
         </dependency>
 
     </dependencies>

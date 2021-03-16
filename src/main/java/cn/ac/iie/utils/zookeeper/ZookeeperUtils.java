@@ -1,5 +1,6 @@
 package cn.ac.iie.utils.zookeeper;
 
+import cn.ac.iie.utils.system.LogPrintUtil;
 import org.apache.log4j.Logger;
 import org.apache.zookeeper.*;
 import org.apache.zookeeper.data.ACL;
@@ -56,7 +57,7 @@ public class ZookeeperUtils implements Watcher {
                 }
             }
         } catch (KeeperException | InterruptedException e) {
-            logger.error("modify error Can't modify," + e.getMessage());
+            logger.error("modify error Can't modify," + LogPrintUtil.print(e));
         } finally {
             closeConn();
         }
@@ -87,7 +88,7 @@ public class ZookeeperUtils implements Watcher {
                 zookeeper.close();
             }
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            logger.error(LogPrintUtil.print(e));
         }
     }
 
@@ -104,8 +105,7 @@ public class ZookeeperUtils implements Watcher {
             byte[] resByte = zookeeper.getData(path, true, stat);
             result = new String(resByte);
         } catch (KeeperException | InterruptedException e) {
-            logger.error("Get node information exception");
-            e.printStackTrace();
+            logger.error("Get node information exception" + LogPrintUtil.print(e));
         }
         return result;
     }
@@ -129,7 +129,7 @@ public class ZookeeperUtils implements Watcher {
                 logger.warn("Node already exists ! Don't need to create");
             }
         } catch (KeeperException | InterruptedException e) {
-            e.printStackTrace();
+            logger.error(LogPrintUtil.print(e));
         } finally {
             closeConn();
         }

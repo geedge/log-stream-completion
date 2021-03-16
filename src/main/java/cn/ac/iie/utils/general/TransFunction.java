@@ -3,9 +3,11 @@ package cn.ac.iie.utils.general;
 import cn.ac.iie.common.FlowWriteConfig;
 import cn.ac.iie.utils.hbase.HBaseUtils;
 import cn.ac.iie.utils.json.JsonParseUtil;
+import cn.ac.iie.utils.system.LogPrintUtil;
+import cn.hutool.log.Log;
+import cn.hutool.log.LogFactory;
 import com.jayway.jsonpath.InvalidPathException;
 import com.jayway.jsonpath.JsonPath;
-import com.jayway.jsonpath.PathNotFoundException;
 import com.zdjizhi.utils.Encodes;
 import com.zdjizhi.utils.FormatUtils;
 import com.zdjizhi.utils.IpLookup;
@@ -13,7 +15,6 @@ import com.zdjizhi.utils.StringUtil;
 import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -21,7 +22,11 @@ import java.util.regex.Pattern;
  * @author qidaijie
  */
 class TransFunction {
+
     private static Logger logger = Logger.getLogger(TransFunction.class);
+
+    private static final Log log = LogFactory.get();
+
     private static final Pattern pattern = Pattern.compile("[0-9]*");
 
     /**
@@ -74,7 +79,7 @@ class TransFunction {
     static String radiusMatch(String ip) {
         String account = HBaseUtils.getAccount(ip.trim());
         if (StringUtil.isBlank(account)) {
-            logger.warn("HashMap get Account is null,IP is :" + ip);
+            log.warn("HashMap get account is null, Ip is :{}", ip);
         }
         return account;
     }
@@ -89,7 +94,8 @@ class TransFunction {
         try {
             return FormatUtils.getTopPrivateDomain(domain);
         } catch (StringIndexOutOfBoundsException outException) {
-            logger.error("解析顶级域名异常,异常域名:" + domain, outException);
+            log.error("解析顶级域名异常,异常域名:{}" + domain);
+            logger.error(LogPrintUtil.print(outException));
             return "";
         }
     }
@@ -112,7 +118,7 @@ class TransFunction {
                 }
             }
         } catch (Exception e) {
-            logger.error("解析 Base64 异常,异常信息:" + e);
+            logger.error("解析 Base64 异常,异常信息:" + LogPrintUtil.print(e));
         }
         return result;
     }
@@ -132,7 +138,7 @@ class TransFunction {
                 flattenResult = read.get(0);
             }
         } catch (ClassCastException | InvalidPathException e) {
-            logger.error("设备标签解析异常，[ " + expr + " ]解析表达式错误", e);
+            log.error("设备标签解析异常，[ " + expr + " ]解析表达式错误" + LogPrintUtil.print(e));
         }
         return flattenResult;
     }
@@ -184,14 +190,14 @@ class TransFunction {
                 }
             }
         } catch (Exception e) {
-            logger.error("IF 函数执行异常,异常信息:" + e);
-            e.printStackTrace();
+            logger.error("IF 函数执行异常,异常信息:" + LogPrintUtil.print(e));
         }
         return null;
     }
 
     /**
      * 设置固定值函数 若为数字则转为long返回
+     *
      * @param param 默认值
      * @return 返回数字或字符串
      */
@@ -204,8 +210,7 @@ class TransFunction {
                 return param;
             }
         } catch (Exception e) {
-            logger.error("SetValue 函数异常，异常信息：" + e);
-            e.printStackTrace();
+            logger.error("SetValue 函数异常，异常信息：" + LogPrintUtil.print(e));
         }
         return null;
     }

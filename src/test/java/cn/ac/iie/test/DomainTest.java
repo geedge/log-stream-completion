@@ -3,6 +3,9 @@ package cn.ac.iie.test;
 import com.zdjizhi.utils.FormatUtils;
 import org.junit.Test;
 
+import java.util.Date;
+
+
 /**
  * @author qidaijie
  * @Package com.zdjizhi.flume
@@ -15,5 +18,6 @@ public class DomainTest {
     public void getDomainTest() {
         String url = "array808.prod.do.dsp.mp.microsoft.com";
         System.out.println(FormatUtils.getTopPrivateDomain(url));
+
     }
 }
