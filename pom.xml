@@ -4,7 +4,7 @@
 
     <groupId>cn.ac.iie</groupId>
     <artifactId>log-stream-completion-schema</artifactId>
-    <version>v3.21.01.02-ack-ratelimit-set</version>
+    <version>v3.21.03.16-eal4</version>
     <packaging>jar</packaging>
 
     <name>log-stream-completion-schema</name>
@@ -18,10 +18,23 @@
             <url>http://192.168.40.125:8099/content/groups/public</url>
         </repository>
 
+        <repository>
+            <id>maven-ali</id>
+            <url>http://maven.aliyun.com/nexus/content/groups/public/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+                <updatePolicy>always</updatePolicy>
+                <checksumPolicy>fail</checksumPolicy>
+            </snapshots>
+        </repository>
 
     </repositories>
 
     <build>
+
         <plugins>
 
             <plugin>
@@ -54,6 +67,19 @@
                 </executions>
             </plugin>
 
+            <plugin>
+                <groupId>io.github.zlika</groupId>
+                <artifactId>reproducible-build-maven-plugin</artifactId>
+                <version>0.2</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>strip-jar</goal>
+                        </goals>
+                        <phase>package</phase>
+                    </execution>
+                </executions>
+            </plugin>
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -64,7 +90,9 @@
                     <target>1.8</target>
                 </configuration>
             </plugin>
+
         </plugins>
+
         <resources>
             <resource>
                 <directory>properties</directory>
@@ -109,7 +137,7 @@
             <groupId>org.apache.storm</groupId>
             <artifactId>storm-core</artifactId>
             <version>${storm.version}</version>
-            <!--<scope>provided</scope>-->
+            <scope>provided</scope>
             <exclusions>
                 <exclusion>
                     <artifactId>slf4j-log4j12</artifactId>
@@ -270,14 +298,13 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        
+
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
             <version>5.3.2</version>
             <scope>compile</scope>
         </dependency>
-
 
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
@@ -308,6 +335,15 @@
             <artifactId>hutool-all</artifactId>
             <version>5.5.2</version>
         </dependency>
+
+        <!--&lt;!&ndash; https://mvnrepository.com/artifact/io.github.zlika/reproducible-build-maven-plugin &ndash;&gt;-->
+        <!--<dependency>-->
+            <!--<groupId>io.github.zlika</groupId>-->
+            <!--<artifactId>reproducible-build-maven-plugin</artifactId>-->
+            <!--<version>0.12</version>-->
+        <!--</dependency>-->
+
+
 
     </dependencies>
 </project>
