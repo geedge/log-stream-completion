@@ -2,6 +2,7 @@ package com.zdjizhi.utils.zookeeper;
 
 import cn.hutool.log.Log;
 import cn.hutool.log.LogFactory;
+import com.zdjizhi.utils.exception.StreamCompletionException;
 import org.apache.log4j.Logger;
 import org.apache.zookeeper.*;
 import org.apache.zookeeper.data.Stat;
@@ -89,7 +90,7 @@ public class DistributedLock implements Lock, Watcher {
                 waitForLock(waitLock, sessionTimeout);
             }
         } catch (InterruptedException | KeeperException e) {
-            e.printStackTrace();
+            logger.error("获取锁异常" + e);
         }
     }
 
@@ -122,7 +123,7 @@ public class DistributedLock implements Lock, Watcher {
             String prevNode = currentLock.substring(currentLock.lastIndexOf("/") + 1);
             waitLock = lockObjects.get(Collections.binarySearch(lockObjects, prevNode) - 1);
         } catch (InterruptedException | KeeperException e) {
-            e.printStackTrace();
+            logger.error("获取锁过程异常" + e);
         }
         return false;
     }
@@ -135,8 +136,8 @@ public class DistributedLock implements Lock, Watcher {
                 return true;
             }
             return waitForLock(waitLock, timeout);
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (KeeperException | InterruptedException | StreamCompletionException e) {
+            logger.error("判断是否锁定异常" + e);
         }
         return false;
     }
@@ -161,7 +162,7 @@ public class DistributedLock implements Lock, Watcher {
             currentLock = null;
             zk.close();
         } catch (InterruptedException | KeeperException e) {
-            e.printStackTrace();
+            logger.error("关闭锁异常" + e);
         }
     }
 

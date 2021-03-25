@@ -135,13 +135,8 @@ public class JsonParseUtil {
             if (checkKeepField(filedStr)) {
                 String name = JsonPath.read(filedStr, "$.name").toString();
                 String type = JsonPath.read(filedStr, "$.type").toString();
-//                boolean contains = type.contains("[");
-//                if (contains) {
-//                    map.put(name, Integer.class);
-//                } else {
                 //组合用来生成实体类的map
                 map.put(name, getClassName(type));
-//                }
             }
         }
         return map;

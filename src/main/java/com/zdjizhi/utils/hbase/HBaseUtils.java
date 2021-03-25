@@ -68,10 +68,8 @@ public class HBaseUtils {
             logger.warn("HBaseUtils get HBase connection,now to getAll().");
         } catch (IOException ioe) {
             logger.error("HBaseUtils getHbaseConn() IOException===>{" + ioe + "}<===");
-            ioe.printStackTrace();
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             logger.error("HBaseUtils getHbaseConn() Exception===>{" + e + "}<===");
-            e.printStackTrace();
         }
     }
 
@@ -122,10 +120,8 @@ public class HBaseUtils {
             time = endTime;
         } catch (IOException ioe) {
             logger.error("HBaseUtils timestampsFilter is IOException===>{" + ioe + "}<===");
-            ioe.printStackTrace();
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             logger.error("HBaseUtils timestampsFilter is Exception===>{" + e + "}<===");
-            e.printStackTrace();
         } finally {
             if (scanner != null) {
                 scanner.close();
@@ -134,7 +130,7 @@ public class HBaseUtils {
                 try {
                     table.close();
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    logger.error("HBase Table Close ERROR! Exception message is:" + e);
                 }
             }
         }
@@ -160,10 +156,8 @@ public class HBaseUtils {
             scanner.close();
         } catch (IOException ioe) {
             logger.error("HBaseUtils getAll() is IOException===>{" + ioe + "}<===");
-            ioe.printStackTrace();
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             logger.error("HBaseUtils getAll() is Exception===>{" + e + "}<===");
-            e.printStackTrace();
         }
     }
 
@@ -179,26 +173,11 @@ public class HBaseUtils {
             public void run() {
                 try {
                     change();
-                } catch (Exception e) {
+                } catch (RuntimeException e) {
                     logger.error("HBaseUtils update hbaseCache is error===>{" + e + "}<===");
-                    e.printStackTrace();
                 }
             }
         }, 1, FlowWriteConfig.HBASE_TICK_TUPLE_FREQ_SECS, TimeUnit.SECONDS);
-
-//
-//        Timer timer = new Timer();
-//        timer.scheduleAtFixedRate(new TimerTask() {
-//            @Override
-//            public void run() {
-//                try {
-//                    change();
-//                } catch (Exception e) {
-//                    logger.error("HBaseUtils update hbaseCache is error===>{" + e + "}<===");
-//                    e.printStackTrace();
-//                }
-//            }
-//        }, 1, 1000 * FlowWriteConfig.HBASE_TICK_TUPLE_FREQ_SECS);//起始1ms,以后每隔60s
     }
 
 

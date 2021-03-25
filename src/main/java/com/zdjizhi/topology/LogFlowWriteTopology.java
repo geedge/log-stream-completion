@@ -7,6 +7,7 @@ import com.zdjizhi.common.FlowWriteConfig;
 import com.zdjizhi.spout.CustomizedKafkaSpout;
 import cn.hutool.log.Log;
 import cn.hutool.log.LogFactory;
+import com.zdjizhi.utils.exception.StreamCompletionException;
 import org.apache.storm.Config;
 import org.apache.storm.generated.AlreadyAliveException;
 import org.apache.storm.generated.AuthorizationException;
@@ -70,25 +71,29 @@ public class LogFlowWriteTopology {
         }
     }
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
         LogFlowWriteTopology flowWriteTopology;
-        boolean runLocally = true;
-        int size = 2;
-        if (args.length >= size && FlowWriteConfig.MODEL.equalsIgnoreCase(args[1])) {
-            runLocally = false;
-            flowWriteTopology = new LogFlowWriteTopology(args[0]);
-        } else {
-            flowWriteTopology = new LogFlowWriteTopology();
-        }
+        try {
+            boolean runLocally = true;
+            int size = 2;
+            if (args.length >= size && FlowWriteConfig.MODEL.equalsIgnoreCase(args[1])) {
+                runLocally = false;
+                flowWriteTopology = new LogFlowWriteTopology(args[0]);
+            } else {
+                flowWriteTopology = new LogFlowWriteTopology();
+            }
 
-        flowWriteTopology.buildTopology();
+            flowWriteTopology.buildTopology();
 
-        if (runLocally) {
-            logger.info("执行本地模式...");
-            flowWriteTopology.runLocally();
-        } else {
-            logger.info("执行远程部署模式...");
-            flowWriteTopology.runRemotely();
+            if (runLocally) {
+                logger.info("执行本地模式...");
+                flowWriteTopology.runLocally();
+            } else {
+                logger.info("执行远程部署模式...");
+                flowWriteTopology.runRemotely();
+            }
+        } catch (StreamCompletionException | InterruptedException | InvalidTopologyException | AlreadyAliveException | AuthorizationException e) {
+            logger.error("Topology Start ERROR! message is:" + e);
         }
     }
 }

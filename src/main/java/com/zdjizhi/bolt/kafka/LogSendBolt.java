@@ -1,6 +1,7 @@
 package com.zdjizhi.bolt.kafka;
 
 import com.zdjizhi.common.FlowWriteConfig;
+import com.zdjizhi.utils.exception.StreamCompletionException;
 import com.zdjizhi.utils.kafka.KafkaLogSend;
 import com.zdjizhi.utils.system.TupleUtils;
 import cn.hutool.log.Log;
@@ -52,9 +53,8 @@ public class LogSendBolt extends BaseBasicBolt {
                     list.clear();
                 }
             }
-        } catch (Exception e) {
+        } catch (StreamCompletionException e) {
             logger.error(FlowWriteConfig.KAFKA_TOPIC + "日志发送Kafka过程出现异常");
-            e.printStackTrace();
         }
     }
 

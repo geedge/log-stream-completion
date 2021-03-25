@@ -1,9 +1,9 @@
 package com.zdjizhi.utils.general;
 
+import cn.hutool.core.codec.Base64;
 import com.zdjizhi.common.FlowWriteConfig;
 import com.zdjizhi.utils.hbase.HBaseUtils;
 import com.zdjizhi.utils.json.JsonParseUtil;
-import com.zdjizhi.utils.system.LogPrintUtil;
 import cn.hutool.log.Log;
 import cn.hutool.log.LogFactory;
 import com.jayway.jsonpath.InvalidPathException;
@@ -12,7 +12,6 @@ import com.zdjizhi.utils.Encodes;
 import com.zdjizhi.utils.FormatUtils;
 import com.zdjizhi.utils.IpLookup;
 import com.zdjizhi.utils.StringUtil;
-
 import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -23,8 +22,6 @@ import java.util.regex.Pattern;
 class TransFunction {
 
     private static final Log logger = LogFactory.get();
-
-    private static final Log log = LogFactory.get();
 
     private static final Pattern PATTERN = Pattern.compile("[0-9]*");
 
@@ -78,7 +75,7 @@ class TransFunction {
     static String radiusMatch(String ip) {
         String account = HBaseUtils.getAccount(ip.trim());
         if (StringUtil.isBlank(account)) {
-            log.warn("HashMap get account is null, Ip is :{}", ip);
+            logger.warn("HashMap get account is null, Ip is :{}", ip);
         }
         return account;
     }
@@ -93,8 +90,7 @@ class TransFunction {
         try {
             return FormatUtils.getTopPrivateDomain(domain);
         } catch (StringIndexOutOfBoundsException outException) {
-            log.error("解析顶级域名异常,异常域名:{}" + domain);
-            logger.error(LogPrintUtil.print(outException));
+            logger.error("解析顶级域名异常,异常域名:{}" + domain);
             return "";
         }
     }
@@ -111,13 +107,13 @@ class TransFunction {
         try {
             if (StringUtil.isNotBlank(message)) {
                 if (StringUtil.isNotBlank(charset)) {
-                    result = Encodes.decodeBase64String(message, charset);
+                    result = Base64.decodeStr(message, charset);
                 } else {
-                    result = Encodes.decodeBase64String(message, FlowWriteConfig.MAIL_DEFAULT_CHARSET);
+                    result = Base64.decodeStr(message, FlowWriteConfig.MAIL_DEFAULT_CHARSET);
                 }
             }
-        } catch (Exception e) {
-            logger.error("解析 Base64 异常,异常信息:" + LogPrintUtil.print(e));
+        } catch (RuntimeException rune) {
+            logger.error("解析 Base64 异常,异常信息:" + rune);
         }
         return result;
     }
@@ -137,7 +133,7 @@ class TransFunction {
                 flattenResult = read.get(0);
             }
         } catch (ClassCastException | InvalidPathException e) {
-            log.error("设备标签解析异常，[ " + expr + " ]解析表达式错误" + LogPrintUtil.print(e));
+            logger.error("设备标签解析异常，[ " + expr + " ]解析表达式错误" + e);
         }
         return flattenResult;
     }
@@ -188,8 +184,8 @@ class TransFunction {
                     }
                 }
             }
-        } catch (Exception e) {
-            logger.error("IF 函数执行异常,异常信息:" + LogPrintUtil.print(e));
+        } catch (RuntimeException e) {
+            logger.error("IF 函数执行异常,异常信息:" + e);
         }
         return null;
     }
@@ -208,8 +204,8 @@ class TransFunction {
             } else {
                 return param;
             }
-        } catch (Exception e) {
-            logger.error("SetValue 函数异常，异常信息：" + LogPrintUtil.print(e));
+        } catch (RuntimeException e) {
+            logger.error("SetValue 函数异常，异常信息：" + e);
         }
         return null;
     }

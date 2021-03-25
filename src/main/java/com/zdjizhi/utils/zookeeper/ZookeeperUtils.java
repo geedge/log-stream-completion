@@ -1,6 +1,6 @@
 package com.zdjizhi.utils.zookeeper;
 
-import com.zdjizhi.utils.system.LogPrintUtil;
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.log.Log;
 import cn.hutool.log.LogFactory;
 import org.apache.zookeeper.*;
@@ -58,7 +58,7 @@ public class ZookeeperUtils implements Watcher {
                 }
             }
         } catch (KeeperException | InterruptedException e) {
-            logger.error("modify error Can't modify," + LogPrintUtil.print(e));
+            logger.error("modify error Can't modify," + e);
         } finally {
             closeConn();
         }
@@ -76,7 +76,7 @@ public class ZookeeperUtils implements Watcher {
             zookeeper = new ZooKeeper(host, SESSION_TIME_OUT, this);
             countDownLatch.await();
         } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
+            logger.error("Connection to the Zookeeper Exception! message:" + e);
         }
     }
 
@@ -89,7 +89,7 @@ public class ZookeeperUtils implements Watcher {
                 zookeeper.close();
             }
         } catch (InterruptedException e) {
-            logger.error(LogPrintUtil.print(e));
+            logger.error("Close the Zookeeper connection Exception! message:" + e);
         }
     }
 
@@ -104,9 +104,10 @@ public class ZookeeperUtils implements Watcher {
         Stat stat = new Stat();
         try {
             byte[] resByte = zookeeper.getData(path, true, stat);
-            result = new String(resByte);
+
+            result = StrUtil.str(resByte, "UTF-8");
         } catch (KeeperException | InterruptedException e) {
-            logger.error("Get node information exception" + LogPrintUtil.print(e));
+            logger.error("Get node information exception" + e);
         }
         return result;
     }
@@ -130,7 +131,7 @@ public class ZookeeperUtils implements Watcher {
                 logger.warn("Node already exists ! Don't need to create");
             }
         } catch (KeeperException | InterruptedException e) {
-            logger.error(LogPrintUtil.print(e));
+            logger.error(e);
         } finally {
             closeConn();
         }

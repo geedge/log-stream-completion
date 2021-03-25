@@ -2,6 +2,7 @@ package com.zdjizhi.utils.general;
 
 
 import com.zdjizhi.common.FlowWriteConfig;
+import com.zdjizhi.utils.exception.StreamCompletionException;
 import com.zdjizhi.utils.json.JsonParseUtil;
 import cn.hutool.log.Log;
 import cn.hutool.log.LogFactory;
@@ -79,9 +80,8 @@ public class TransFormUtils {
                 functionSet(function, object, appendToKeyName, appendTo, name, param);
             }
             return JSONObject.toJSONString(object);
-        } catch (Exception e) {
+        } catch (StreamCompletionException e) {
             logger.error(FlowWriteConfig.KAFKA_TOPIC + "日志预处理过程出现异常");
-            e.printStackTrace();
             return "";
         }
     }

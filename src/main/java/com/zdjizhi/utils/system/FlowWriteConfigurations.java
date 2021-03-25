@@ -1,5 +1,10 @@
 package com.zdjizhi.utils.system;
 
+import com.zdjizhi.utils.StringUtil;
+import com.zdjizhi.utils.exception.StreamCompletionException;
+
+import java.io.IOException;
+import java.util.Locale;
 import java.util.Properties;
 
 
@@ -46,9 +51,9 @@ public final class FlowWriteConfigurations {
 
     public static Boolean getBooleanProperty(Integer type, String key) {
         if (type == 0) {
-            return "true".equals(propService.getProperty(key).toLowerCase().trim());
+            return StringUtil.equals(propService.getProperty(key).toLowerCase().trim().toUpperCase(Locale.ENGLISH), "true");
         } else if (type == 1) {
-            return "true".equals(propKafka.getProperty(key).toLowerCase().trim());
+            return StringUtil.equals(propKafka.getProperty(key).toLowerCase().trim().toUpperCase(Locale.ENGLISH), "true");
         } else {
             return null;
         }
@@ -58,7 +63,7 @@ public final class FlowWriteConfigurations {
         try {
             propService.load(FlowWriteConfigurations.class.getClassLoader().getResourceAsStream("service_flow_config.properties"));
             propKafka.load(FlowWriteConfigurations.class.getClassLoader().getResourceAsStream("kafka_config.properties"));
-        } catch (Exception e) {
+        } catch (IOException | StreamCompletionException e) {
             propKafka = null;
             propService = null;
         }
