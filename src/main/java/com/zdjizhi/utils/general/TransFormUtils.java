@@ -149,6 +149,11 @@ public class TransFormUtils {
                     JsonParseUtil.setValue(object, appendToKeyName, TransFunction.radiusMatch(name.toString()));
                 }
                 break;
+            case "app_match":
+                if ((int) name != 0 && appendTo == null) {
+                    JsonParseUtil.setValue(object, appendToKeyName, TransFunction.appMatch(Integer.parseInt(name.toString())));
+                }
+                break;
             case "decode_of_base64":
                 if (name != null) {
                     JsonParseUtil.setValue(object, appendToKeyName, TransFunction.decodeBase64(name.toString(), TransFunction.isJsonValue(object, param)));

@@ -4,6 +4,7 @@ import cn.hutool.core.thread.ThreadUtil;
 import com.zdjizhi.common.FlowWriteConfig;
 import cn.hutool.log.Log;
 import cn.hutool.log.LogFactory;
+import com.zdjizhi.common.KafkaProConfig;
 import com.zdjizhi.utils.exception.StreamCompletionException;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;

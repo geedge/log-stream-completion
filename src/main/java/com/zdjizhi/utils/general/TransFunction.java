@@ -2,6 +2,7 @@ package com.zdjizhi.utils.general;
 
 import cn.hutool.core.codec.Base64;
 import com.zdjizhi.common.FlowWriteConfig;
+import com.zdjizhi.utils.app.AppUtils;
 import com.zdjizhi.utils.hbase.HBaseUtils;
 import com.zdjizhi.utils.json.JsonParseUtil;
 import cn.hutool.log.Log;
@@ -12,6 +13,7 @@ import com.zdjizhi.utils.Encodes;
 import com.zdjizhi.utils.FormatUtils;
 import com.zdjizhi.utils.IpLookup;
 import com.zdjizhi.utils.StringUtil;
+
 import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -78,6 +80,20 @@ class TransFunction {
             logger.warn("HashMap get account is null, Ip is :{}", ip);
         }
         return account;
+    }
+
+    /**
+     * appId与缓存中对应关系补全appName
+     *
+     * @param appId id
+     * @return appName
+     */
+    static String appMatch(int appId) {
+        String appName = AppUtils.getAppName(appId);
+        if (StringUtil.isBlank(appName)) {
+            logger.warn("AppMap get appName is null, ID is :{}", appId);
+        }
+        return appName;
     }
 
     /**
