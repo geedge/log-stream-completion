@@ -14,6 +14,7 @@ public class FlowWriteConfig {
     public static final String IS_JSON_KEY_TAG = "$.";
     public static final String IF_CONDITION_SPLITTER = "=";
     public static final String MODEL = "remote";
+    public static final String PROTOCOL_SPLITTER = "\\.";
     /**
      * System
      */

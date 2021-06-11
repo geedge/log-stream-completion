@@ -1,7 +1,6 @@
 package com.zdjizhi.utils.general;
 
 import com.zdjizhi.common.FlowWriteConfig;
-import com.zdjizhi.utils.exception.StreamCompletionException;
 import com.zdjizhi.utils.zookeeper.DistributedLock;
 import com.zdjizhi.utils.zookeeper.ZookeeperUtils;
 import cn.hutool.log.Log;
@@ -127,7 +126,7 @@ public class SnowflakeId {
         }
         this.workerId = tmpWorkerId;
         this.dataCenterId = dataCenterIdNum;
-        } catch (StreamCompletionException e) {
+        } catch (RuntimeException e) {
             logger.error("This is not usual error!!!===>>>" + e + "<<<===");
         }finally {
                 lock.unlock();

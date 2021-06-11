@@ -85,11 +85,12 @@ class TransFunction {
     /**
      * appId与缓存中对应关系补全appName
      *
-     * @param appId id
+     * @param appIds app id 列表
      * @return appName
      */
-    static String appMatch(int appId) {
-        String appName = AppUtils.getAppName(appId);
+    static String appMatch(String appIds) {
+        String appId = appIds.split(FlowWriteConfig.FORMAT_SPLITTER)[0];
+        String appName = AppUtils.getAppName(Integer.parseInt(appId));
         if (StringUtil.isBlank(appName)) {
             logger.warn("AppMap get appName is null, ID is :{}", appId);
         }

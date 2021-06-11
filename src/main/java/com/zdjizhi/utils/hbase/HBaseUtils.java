@@ -51,7 +51,7 @@ public class HBaseUtils {
         //拉取所有
         getAll();
         //定时更新
-        updateHabaseCache();
+        updateHBaseCache();
     }
 
     private static void getHbaseConn() {
@@ -164,7 +164,7 @@ public class HBaseUtils {
     /**
      * 验证定时器,每隔一段时间验证一次-验证获取新的Cookie
      */
-    private void updateHabaseCache() {
+    private void updateHBaseCache() {
 //        ScheduledExecutorService executorService = new ScheduledThreadPoolExecutor(1,
 //                new BasicThreadFactory.Builder().namingPattern("hbase-change-pool-%d").daemon(true).build());
         ScheduledExecutorService executorService = new ScheduledThreadPoolExecutor(1);
@@ -172,7 +172,9 @@ public class HBaseUtils {
             @Override
             public void run() {
                 try {
-                    change();
+                    if (FlowWriteConfig.HBASE_TICK_TUPLE_FREQ_SECS != 0) {
+                        change();
+                    }
                 } catch (RuntimeException e) {
                     logger.error("HBaseUtils update hbaseCache is error===>{" + e + "}<===");
                 }

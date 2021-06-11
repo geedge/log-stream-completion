@@ -4,7 +4,7 @@
 
     <groupId>com.zdjizhi</groupId>
     <artifactId>log-stream-completion-schema</artifactId>
-    <version>v3.21.04.23-appId</version>
+    <version>v3.21.06.07-Array</version>
     <packaging>jar</packaging>
 
     <name>log-stream-completion-schema</name>
@@ -34,7 +34,7 @@
 
                 <executions>
                     <execution>
-                        <phase>package</phase>
+                        <phase>install</phase>
                         <goals>
                             <goal>shade</goal>
                         </goals>
@@ -128,7 +128,7 @@
             <groupId>org.apache.storm</groupId>
             <artifactId>storm-core</artifactId>
             <version>${storm.version}</version>
-            <!--<scope>provided</scope>-->
+            <scope>provided</scope>
             <exclusions>
                 <exclusion>
                     <artifactId>slf4j-log4j12</artifactId>

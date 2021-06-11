@@ -43,6 +43,9 @@ public class JsonParseUtil {
             case "long":
                 clazz = long.class;
                 break;
+            case "array":
+                clazz = JSONArray.class;
+                break;
             case "Integer":
                 clazz = Integer.class;
                 break;
@@ -135,6 +138,9 @@ public class JsonParseUtil {
             if (checkKeepField(filedStr)) {
                 String name = JsonPath.read(filedStr, "$.name").toString();
                 String type = JsonPath.read(filedStr, "$.type").toString();
+                if (type.contains("{")) {
+                    type = JsonPath.read(filedStr, "$.type.type").toString();
+                }
                 //组合用来生成实体类的map
                 map.put(name, getClassName(type));
             }

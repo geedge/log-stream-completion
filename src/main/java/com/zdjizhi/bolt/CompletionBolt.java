@@ -1,10 +1,8 @@
 package com.zdjizhi.bolt;
 
-import com.zdjizhi.common.FlowWriteConfig;
 import cn.hutool.log.Log;
 import cn.hutool.log.LogFactory;
 import com.zdjizhi.utils.StringUtil;
-import com.zdjizhi.utils.exception.StreamCompletionException;
 import org.apache.storm.task.TopologyContext;
 import org.apache.storm.topology.BasicOutputCollector;
 import org.apache.storm.topology.OutputFieldsDeclarer;
@@ -39,8 +37,8 @@ public class CompletionBolt extends BaseBasicBolt {
             if (StringUtil.isNotBlank(message)) {
                 basicOutputCollector.emit(new Values(dealCommonMessage(message)));
             }
-        } catch (StreamCompletionException e) {
-            logger.error(FlowWriteConfig.KAFKA_TOPIC + "接收/解析过程出现异常");
+        } catch (RuntimeException e) {
+            logger.error("处理原始日志下发过程异常,异常信息：" + e);
         }
     }
 

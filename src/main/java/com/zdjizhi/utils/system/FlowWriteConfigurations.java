@@ -1,7 +1,6 @@
 package com.zdjizhi.utils.system;
 
 import com.zdjizhi.utils.StringUtil;
-import com.zdjizhi.utils.exception.StreamCompletionException;
 
 import java.io.IOException;
 import java.util.Locale;
@@ -62,8 +61,8 @@ public final class FlowWriteConfigurations {
     static {
         try {
             propService.load(FlowWriteConfigurations.class.getClassLoader().getResourceAsStream("service_flow_config.properties"));
-            propKafka.load(FlowWriteConfigurations.class.getClassLoader().getResourceAsStream("kafka_config.properties"));
-        } catch (IOException | StreamCompletionException e) {
+            propKafka.load(FlowWriteConfigurations.class.getClassLoader().getResourceAsStream("default_config.properties"));
+        } catch (IOException | RuntimeException e) {
             propKafka = null;
             propService = null;
         }

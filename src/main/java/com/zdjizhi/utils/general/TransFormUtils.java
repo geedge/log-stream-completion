@@ -2,7 +2,6 @@ package com.zdjizhi.utils.general;
 
 
 import com.zdjizhi.common.FlowWriteConfig;
-import com.zdjizhi.utils.exception.StreamCompletionException;
 import com.zdjizhi.utils.json.JsonParseUtil;
 import cn.hutool.log.Log;
 import cn.hutool.log.LogFactory;
@@ -38,11 +37,6 @@ public class TransFormUtils {
     private static ArrayList<String[]> jobList = JsonParseUtil.getJobListFromHttp(FlowWriteConfig.SCHEMA_HTTP);
 
     /**
-     * 补全工具类
-     */
-//    private static FormatUtils build = new FormatUtils.Builder(false).build();
-
-    /**
      * IP定位库工具类
      */
     private static IpLookup ipLookup = new IpLookup.Builder(false)
@@ -61,10 +55,8 @@ public class TransFormUtils {
      * @return 补全后的日志
      */
     public static String dealCommonMessage(String message) {
-
-        Object object = JSONObject.parseObject(message, mapObject.getClass());
-
         try {
+            Object object = JSONObject.parseObject(message, mapObject.getClass());
             for (String[] strings : jobList) {
                 //用到的参数的值
                 Object name = JsonParseUtil.getValue(object, strings[0]);
@@ -80,8 +72,8 @@ public class TransFormUtils {
                 functionSet(function, object, appendToKeyName, appendTo, name, param);
             }
             return JSONObject.toJSONString(object);
-        } catch (StreamCompletionException e) {
-            logger.error(FlowWriteConfig.KAFKA_TOPIC + "日志预处理过程出现异常");
+        } catch (RuntimeException e) {
+            logger.error("解析补全日志信息过程异常,异常信息:" + e);
             return "";
         }
     }
@@ -105,8 +97,6 @@ public class TransFormUtils {
                 }
                 break;
             case "snowflake_id":
-//                JsonParseUtil.setValue(object, appendToKeyName,
-//                        build.getSnowflakeId(FlowWriteConfig.ZOOKEEPER_SERVERS, FlowWriteConfig.DATA_CENTER_ID_NUM));
                 JsonParseUtil.setValue(object, appendToKeyName, SnowflakeId.generateId());
                 break;
             case "geo_ip_detail":
@@ -150,8 +140,8 @@ public class TransFormUtils {
                 }
                 break;
             case "app_match":
-                if ((int) name != 0 && appendTo == null) {
-                    JsonParseUtil.setValue(object, appendToKeyName, TransFunction.appMatch(Integer.parseInt(name.toString())));
+                if (name != null && appendTo == null) {
+                    JsonParseUtil.setValue(object, appendToKeyName, TransFunction.appMatch(name.toString()));
                 }
                 break;
             case "decode_of_base64":

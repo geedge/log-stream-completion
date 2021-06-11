@@ -4,8 +4,6 @@ import cn.hutool.core.thread.ThreadUtil;
 import com.zdjizhi.common.FlowWriteConfig;
 import cn.hutool.log.Log;
 import cn.hutool.log.LogFactory;
-import com.zdjizhi.common.KafkaProConfig;
-import com.zdjizhi.utils.exception.StreamCompletionException;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -78,8 +76,8 @@ public class CustomizedKafkaSpout extends BaseRichSpout {
             for (ConsumerRecord<String, String> record : records) {
                 this.collector.emit(new Values(record.value()));
             }
-        } catch (StreamCompletionException e) {
-            logger.error("KafkaSpout发送消息出现异常!", e);
+        } catch (RuntimeException e) {
+            logger.error("KafkaSpout发送消息出现异常,异常信息:", e);
         }
     }
 

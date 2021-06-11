@@ -44,7 +44,7 @@ public class AppUtils {
      */
     private AppUtils() {
         //定时更新
-        updateHabaseCache();
+        updateAppIdCache();
     }
 
     /**
@@ -92,13 +92,15 @@ public class AppUtils {
     /**
      * 验证定时器,每隔一段时间验证一次-验证获取新的Cookie
      */
-    private void updateHabaseCache() {
+    private void updateAppIdCache() {
         ScheduledExecutorService executorService = new ScheduledThreadPoolExecutor(1);
         executorService.scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
                 try {
-                    change();
+                    if (FlowWriteConfig.APP_TICK_TUPLE_FREQ_SECS != 0) {
+                        change();
+                    }
                 } catch (RuntimeException e) {
                     logger.error("AppUtils update AppCache is error===>{" + e + "}<===");
                 }

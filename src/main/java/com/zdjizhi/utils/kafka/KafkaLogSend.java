@@ -1,7 +1,7 @@
 package com.zdjizhi.utils.kafka;
 
 import com.zdjizhi.common.FlowWriteConfig;
-import com.zdjizhi.common.KafkaProConfig;
+import com.zdjizhi.common.DefaultProConfig;
 import cn.hutool.log.Log;
 import cn.hutool.log.LogFactory;
 import org.apache.kafka.clients.producer.*;
@@ -70,12 +70,12 @@ public class KafkaLogSend {
         properties.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
         properties.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
         properties.put("acks", FlowWriteConfig.PRODUCER_ACK);
-        properties.put("retries", KafkaProConfig.RETRIES);
-        properties.put("linger.ms", KafkaProConfig.LINGER_MS);
-        properties.put("request.timeout.ms", KafkaProConfig.REQUEST_TIMEOUT_MS);
-        properties.put("batch.size", KafkaProConfig.BATCH_SIZE);
-        properties.put("buffer.memory", KafkaProConfig.BUFFER_MEMORY);
-        properties.put("max.request.size", KafkaProConfig.MAX_REQUEST_SIZE);
+        properties.put("retries", DefaultProConfig.RETRIES);
+        properties.put("linger.ms", DefaultProConfig.LINGER_MS);
+        properties.put("request.timeout.ms", DefaultProConfig.REQUEST_TIMEOUT_MS);
+        properties.put("batch.size", DefaultProConfig.BATCH_SIZE);
+        properties.put("buffer.memory", DefaultProConfig.BUFFER_MEMORY);
+        properties.put("max.request.size", DefaultProConfig.MAX_REQUEST_SIZE);
 //        properties.put("compression.type", FlowWriteConfig.KAFKA_COMPRESSION_TYPE);
 
         /**

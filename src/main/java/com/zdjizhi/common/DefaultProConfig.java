@@ -6,7 +6,7 @@ import com.zdjizhi.utils.system.FlowWriteConfigurations;
 /**
  * @author Administrator
  */
-public class KafkaProConfig {
+public class DefaultProConfig {
 
 
     public static final String RETRIES = FlowWriteConfigurations.getStringProperty(1, "retries");
@@ -15,6 +15,8 @@ public class KafkaProConfig {
     public static final Integer BATCH_SIZE = FlowWriteConfigurations.getIntProperty(1, "batch.size");
     public static final Integer BUFFER_MEMORY = FlowWriteConfigurations.getIntProperty(1, "buffer.memory");
     public static final Integer MAX_REQUEST_SIZE = FlowWriteConfigurations.getIntProperty(1, "max.request.size");
-
+    public static final Integer TRANSFER_BUFFER_SIZE = FlowWriteConfigurations.getIntProperty(1, "transfer_buffer_size");
+    public static final Integer EXECUTOR_RECEIVE_BUFFER_SIZE = FlowWriteConfigurations.getIntProperty(1, "executor_receive_buffer_size");
+    public static final Integer EXECUTOR_SEND_BUFFER_SIZE = FlowWriteConfigurations.getIntProperty(1, "executor_send_buffer_size");
 
 }

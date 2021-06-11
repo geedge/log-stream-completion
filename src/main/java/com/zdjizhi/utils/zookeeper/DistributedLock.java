@@ -2,8 +2,6 @@ package com.zdjizhi.utils.zookeeper;
 
 import cn.hutool.log.Log;
 import cn.hutool.log.LogFactory;
-import com.zdjizhi.utils.exception.StreamCompletionException;
-import org.apache.log4j.Logger;
 import org.apache.zookeeper.*;
 import org.apache.zookeeper.data.Stat;
 
@@ -136,7 +134,7 @@ public class DistributedLock implements Lock, Watcher {
                 return true;
             }
             return waitForLock(waitLock, timeout);
-        } catch (KeeperException | InterruptedException | StreamCompletionException e) {
+        } catch (KeeperException | InterruptedException | RuntimeException e) {
             logger.error("判断是否锁定异常" + e);
         }
         return false;

@@ -2,12 +2,12 @@ package com.zdjizhi.topology;
 
 
 import com.zdjizhi.bolt.CompletionBolt;
-import com.zdjizhi.bolt.kafka.LogSendBolt;
+import com.zdjizhi.bolt.LogSendBolt;
+import com.zdjizhi.common.DefaultProConfig;
 import com.zdjizhi.common.FlowWriteConfig;
 import com.zdjizhi.spout.CustomizedKafkaSpout;
 import cn.hutool.log.Log;
 import cn.hutool.log.LogFactory;
-import com.zdjizhi.utils.exception.StreamCompletionException;
 import org.apache.storm.Config;
 import org.apache.storm.generated.AlreadyAliveException;
 import org.apache.storm.generated.AuthorizationException;
@@ -51,8 +51,9 @@ public class LogFlowWriteTopology {
 
     private void runRemotely() throws AlreadyAliveException, InvalidTopologyException, AuthorizationException {
         topologyConfig.setNumWorkers(FlowWriteConfig.TOPOLOGY_WORKERS);
-        //设置过高会导致很多问题，如心跳线程饿死、吞吐量大幅下跌
-        topologyConfig.put(Config.TOPOLOGY_EXECUTOR_RECEIVE_BUFFER_SIZE, 8);
+        topologyConfig.put(Config.TOPOLOGY_TRANSFER_BUFFER_SIZE,DefaultProConfig.TRANSFER_BUFFER_SIZE);
+        topologyConfig.put(Config.TOPOLOGY_EXECUTOR_RECEIVE_BUFFER_SIZE,DefaultProConfig.EXECUTOR_RECEIVE_BUFFER_SIZE);
+        topologyConfig.put(Config.TOPOLOGY_EXECUTOR_SEND_BUFFER_SIZE,DefaultProConfig.EXECUTOR_SEND_BUFFER_SIZE);
         StormRunner.runTopologyRemotely(builder, topologyName, topologyConfig);
     }
 
@@ -63,7 +64,7 @@ public class LogFlowWriteTopology {
         if (need.equals(FlowWriteConfig.LOG_NEED_COMPLETE)) {
             builder.setBolt("LogCompletionBolt", new CompletionBolt(),
                     FlowWriteConfig.COMPLETION_BOLT_PARALLELISM).localOrShuffleGrouping("LogFlowWriteSpout");
-            builder.setBolt("CompletionLogSendBolt", new LogSendBolt(),
+            builder.setBolt("LogSendBolt", new LogSendBolt(),
                     FlowWriteConfig.KAFKA_BOLT_PARALLELISM).localOrShuffleGrouping("LogCompletionBolt");
         } else {
             builder.setBolt("LogSendBolt", new LogSendBolt(),
@@ -92,7 +93,7 @@ public class LogFlowWriteTopology {
                 logger.info("执行远程部署模式...");
                 flowWriteTopology.runRemotely();
             }
-        } catch (StreamCompletionException | InterruptedException | InvalidTopologyException | AlreadyAliveException | AuthorizationException e) {
+        } catch (RuntimeException | InterruptedException | InvalidTopologyException | AlreadyAliveException | AuthorizationException e) {
             logger.error("Topology Start ERROR! message is:" + e);
         }
     }
