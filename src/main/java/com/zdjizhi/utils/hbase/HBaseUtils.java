@@ -35,7 +35,7 @@ public class HBaseUtils {
 
     private static HBaseUtils hBaseUtils;
 
-    private static void getHBaseInstance() {
+    private static void getInstance() {
         hBaseUtils = new HBaseUtils();
     }
 
@@ -47,14 +47,14 @@ public class HBaseUtils {
         zookeeperIp = FlowWriteConfig.HBASE_ZOOKEEPER_SERVERS;
         hBaseTable = FlowWriteConfig.HBASE_TABLE_NAME;
         //获取连接
-        getHbaseConn();
+        getConnection();
         //拉取所有
         getAll();
         //定时更新
-        updateHBaseCache();
+        updateCache();
     }
 
-    private static void getHbaseConn() {
+    private static void getConnection() {
         try {
             // 管理Hbase的配置信息
             Configuration configuration = HBaseConfiguration.create();
@@ -78,7 +78,7 @@ public class HBaseUtils {
      */
     private static void change() {
         if (hBaseUtils == null) {
-            getHBaseInstance();
+            getInstance();
         }
         long nowTime = System.currentTimeMillis();
         timestampsFilter(time - 1000, nowTime + 500);
@@ -164,7 +164,7 @@ public class HBaseUtils {
     /**
      * 验证定时器,每隔一段时间验证一次-验证获取新的Cookie
      */
-    private void updateHBaseCache() {
+    private void updateCache() {
 //        ScheduledExecutorService executorService = new ScheduledThreadPoolExecutor(1,
 //                new BasicThreadFactory.Builder().namingPattern("hbase-change-pool-%d").daemon(true).build());
         ScheduledExecutorService executorService = new ScheduledThreadPoolExecutor(1);
@@ -192,7 +192,7 @@ public class HBaseUtils {
     public static String getAccount(String clientIp) {
 
         if (hBaseUtils == null) {
-            getHBaseInstance();
+            getInstance();
         }
         return subIdMap.get(clientIp);
 

@@ -97,7 +97,7 @@ public class SnowflakeId {
     /**
      * 设置允许时间回拨的最大限制10s
      */
-    private static final long rollBackTime = 10000L;
+    private static final long ROLL_BACK_TIME = 10000L;
 
 
     private static SnowflakeId idWorker;
@@ -143,7 +143,7 @@ public class SnowflakeId {
     private synchronized long nextId() {
         long timestamp = timeGen();
         //设置一个允许回拨限制时间，系统时间回拨范围在rollBackTime内可以等待校准
-        if (lastTimestamp - timestamp > 0 && lastTimestamp - timestamp < rollBackTime) {
+        if (lastTimestamp - timestamp > 0 && lastTimestamp - timestamp < ROLL_BACK_TIME) {
             timestamp = tilNextMillis(lastTimestamp);
         }
         //如果当前时间小于上一次ID生成的时间戳，说明系统时钟回退过这个时候应当抛出异常

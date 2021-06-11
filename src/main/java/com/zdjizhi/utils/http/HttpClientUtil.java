@@ -18,7 +18,6 @@ import java.io.InputStreamReader;
  * @author qidaijie
  */
 public class HttpClientUtil {
-    //    private static final int MAX_STR_LEN = 512000;
     private static final Log logger = LogFactory.get();
 
     /**

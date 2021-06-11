@@ -124,7 +124,7 @@ public class JsonParseUtil {
      * @return 用于反射生成schema类型的对象的一个map集合
      */
     public static HashMap<String, Class> getMapFromHttp(String http) {
-        HashMap<String, Class> map = new HashMap<>();
+        HashMap<String, Class> map = new HashMap<>(16);
 
         String schema = HttpClientUtil.requestByGetMethod(http);
         Object data = JSON.parseObject(schema).get("data");

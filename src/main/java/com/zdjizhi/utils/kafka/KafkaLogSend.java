@@ -76,9 +76,8 @@ public class KafkaLogSend {
         properties.put("batch.size", DefaultProConfig.BATCH_SIZE);
         properties.put("buffer.memory", DefaultProConfig.BUFFER_MEMORY);
         properties.put("max.request.size", DefaultProConfig.MAX_REQUEST_SIZE);
-//        properties.put("compression.type", FlowWriteConfig.KAFKA_COMPRESSION_TYPE);
 
-        /**
+        /*
          * kafka限流配置-20201117
          */
         properties.put(ProducerConfig.CLIENT_ID_CONFIG, FlowWriteConfig.PRODUCER_CLIENT_ID);

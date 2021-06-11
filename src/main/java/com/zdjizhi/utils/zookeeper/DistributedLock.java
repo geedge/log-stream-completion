@@ -67,7 +67,9 @@ public class DistributedLock implements Lock, Watcher {
         }
     }
 
-    // 节点监视器
+    /**
+     * 节点监视器
+     */
     @Override
     public void process(WatchedEvent event) {
         if (this.countDownLatch != null) {
@@ -140,7 +142,15 @@ public class DistributedLock implements Lock, Watcher {
         return false;
     }
 
-    // 等待锁
+    /**
+     * 等待锁
+     *
+     * @param prev 锁名称
+     * @param waitTime 等待时间
+     * @return
+     * @throws KeeperException
+     * @throws InterruptedException
+     */
     private boolean waitForLock(String prev, long waitTime) throws KeeperException, InterruptedException {
         Stat stat = zk.exists(ROOT_LOCK + "/" + prev, true);
 
