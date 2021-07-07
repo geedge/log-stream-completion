@@ -116,12 +116,16 @@ public class AppUtils {
      * @return account
      */
     public static String getAppName(int appId) {
-
         if (appUtils == null) {
             getAppInstance();
         }
-        return appIdMap.get(appId);
 
+        if (appIdMap.containsKey(appId)) {
+            return appIdMap.get(appId);
+        } else {
+            logger.warn("AppMap get appName is null, ID is :" + appId);
+            return "";
+        }
     }
 
 }

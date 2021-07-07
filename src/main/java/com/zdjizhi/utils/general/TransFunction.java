@@ -1,18 +1,20 @@
 package com.zdjizhi.utils.general;
 
+import clojure.lang.IFn;
 import cn.hutool.core.codec.Base64;
-import com.zdjizhi.common.FlowWriteConfig;
-import com.zdjizhi.utils.app.AppUtils;
-import com.zdjizhi.utils.hbase.HBaseUtils;
-import com.zdjizhi.utils.json.JsonParseUtil;
+import cn.hutool.core.text.StrSpliter;
 import cn.hutool.log.Log;
 import cn.hutool.log.LogFactory;
+import com.alibaba.fastjson.JSONObject;
 import com.jayway.jsonpath.InvalidPathException;
 import com.jayway.jsonpath.JsonPath;
-import com.zdjizhi.utils.Encodes;
+import com.zdjizhi.common.FlowWriteConfig;
 import com.zdjizhi.utils.FormatUtils;
 import com.zdjizhi.utils.IpLookup;
 import com.zdjizhi.utils.StringUtil;
+import com.zdjizhi.utils.app.AppUtils;
+import com.zdjizhi.utils.hbase.HBaseUtils;
+import com.zdjizhi.utils.json.JsonParseUtil;
 
 import java.util.ArrayList;
 import java.util.regex.Matcher;
@@ -28,9 +30,22 @@ class TransFunction {
     private static final Pattern PATTERN = Pattern.compile("[0-9]*");
 
     /**
+     * IP定位库工具类
+     */
+    private static IpLookup ipLookup = new IpLookup.Builder(false)
+            .loadDataFileV4(FlowWriteConfig.IP_LIBRARY + "ip_v4.mmdb")
+            .loadDataFileV6(FlowWriteConfig.IP_LIBRARY + "ip_v6.mmdb")
+            .loadDataFilePrivateV4(FlowWriteConfig.IP_LIBRARY + "ip_private_v4.mmdb")
+            .loadDataFilePrivateV6(FlowWriteConfig.IP_LIBRARY + "ip_private_v6.mmdb")
+            .loadAsnDataFile(FlowWriteConfig.IP_LIBRARY + "asn_v4.mmdb")
+            .loadAsnDataFileV6(FlowWriteConfig.IP_LIBRARY + "asn_v6.mmdb")
+            .build();
+
+    /**
      * 生成当前时间戳的操作
      */
     static long getCurrentTime() {
+
         return System.currentTimeMillis() / 1000;
     }
 
@@ -40,9 +55,10 @@ class TransFunction {
      * @param ip client IP
      * @return ip地址详细信息
      */
-    static String getGeoIpDetail(IpLookup ipLookup, String ip) {
+    static String getGeoIpDetail(String ip) {
 
         return ipLookup.cityLookupDetail(ip);
+
     }
 
     /**
@@ -51,7 +67,7 @@ class TransFunction {
      * @param ip client/server IP
      * @return ASN
      */
-    static String getGeoAsn(IpLookup ipLookup, String ip) {
+    static String getGeoAsn(String ip) {
 
         return ipLookup.asnLookup(ip);
     }
@@ -62,7 +78,7 @@ class TransFunction {
      * @param ip server IP
      * @return 国家
      */
-    static String getGeoIpCountry(IpLookup ipLookup, String ip) {
+    static String getGeoIpCountry(String ip) {
 
         return ipLookup.countryLookup(ip);
     }
@@ -77,7 +93,7 @@ class TransFunction {
     static String radiusMatch(String ip) {
         String account = HBaseUtils.getAccount(ip.trim());
         if (StringUtil.isBlank(account)) {
-            logger.warn("HashMap get account is null, Ip is :{}", ip);
+            logger.warn("HashMap get account is null, Ip is :" + ip);
         }
         return account;
     }
@@ -89,12 +105,13 @@ class TransFunction {
      * @return appName
      */
     static String appMatch(String appIds) {
-        String appId = appIds.split(FlowWriteConfig.FORMAT_SPLITTER)[0];
-        String appName = AppUtils.getAppName(Integer.parseInt(appId));
-        if (StringUtil.isBlank(appName)) {
-            logger.warn("AppMap get appName is null, ID is :{}", appId);
+        try {
+            String appId = StrSpliter.split(appIds, FlowWriteConfig.FORMAT_SPLITTER, true, true).get(0);
+            return AppUtils.getAppName(Integer.parseInt(appId));
+        } catch (NumberFormatException | ClassCastException exception) {
+            logger.error("APP ID列表分割转换异常，异常APP ID列表:" + appIds);
+            return "";
         }
-        return appName;
     }
 
     /**
@@ -107,7 +124,7 @@ class TransFunction {
         try {
             return FormatUtils.getTopPrivateDomain(domain);
         } catch (StringIndexOutOfBoundsException outException) {
-            logger.error("解析顶级域名异常,异常域名:{}" + domain);
+            logger.error("解析顶级域名异常,异常域名:" + domain);
             return "";
         }
     }

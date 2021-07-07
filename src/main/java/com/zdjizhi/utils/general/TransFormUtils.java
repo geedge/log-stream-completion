@@ -1,14 +1,14 @@
 package com.zdjizhi.utils.general;
 
 
-import com.zdjizhi.common.FlowWriteConfig;
-import com.zdjizhi.utils.json.JsonParseUtil;
 import cn.hutool.log.Log;
 import cn.hutool.log.LogFactory;
-import com.alibaba.fastjson.JSONObject;
-import com.zdjizhi.utils.IpLookup;
+import com.zdjizhi.common.FlowWriteConfig;
+import com.zdjizhi.utils.JsonMapper;
+import com.zdjizhi.utils.json.JsonParseUtil;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 
 /**
@@ -37,18 +37,6 @@ public class TransFormUtils {
     private static ArrayList<String[]> jobList = JsonParseUtil.getJobListFromHttp(FlowWriteConfig.SCHEMA_HTTP);
 
     /**
-     * IP定位库工具类
-     */
-    private static IpLookup ipLookup = new IpLookup.Builder(false)
-            .loadDataFileV4(FlowWriteConfig.IP_LIBRARY + "ip_v4.mmdb")
-            .loadDataFileV6(FlowWriteConfig.IP_LIBRARY + "ip_v6.mmdb")
-            .loadDataFilePrivateV4(FlowWriteConfig.IP_LIBRARY + "ip_private_v4.mmdb")
-            .loadDataFilePrivateV6(FlowWriteConfig.IP_LIBRARY + "ip_private_v6.mmdb")
-            .loadAsnDataFile(FlowWriteConfig.IP_LIBRARY + "asn_v4.mmdb")
-            .loadAsnDataFileV6(FlowWriteConfig.IP_LIBRARY + "asn_v6.mmdb")
-            .build();
-
-    /**
      * 解析日志，并补全
      *
      * @param message kafka Topic原始日志
@@ -56,7 +44,7 @@ public class TransFormUtils {
      */
     public static String dealCommonMessage(String message) {
         try {
-            Object object = JSONObject.parseObject(message, mapObject.getClass());
+            Object object = JsonMapper.fromJsonString(message, mapObject.getClass());
             for (String[] strings : jobList) {
                 //用到的参数的值
                 Object name = JsonParseUtil.getValue(object, strings[0]);
@@ -68,12 +56,12 @@ public class TransFormUtils {
                 String function = strings[2];
                 //额外的参数的值
                 String param = strings[3];
-
                 functionSet(function, object, appendToKeyName, appendTo, name, param);
             }
-            return JSONObject.toJSONString(object);
+            return JsonMapper.toJsonString(object);
         } catch (RuntimeException e) {
             logger.error("解析补全日志信息过程异常,异常信息:" + e);
+            e.printStackTrace();
             return "";
         }
     }
@@ -92,7 +80,7 @@ public class TransFormUtils {
     private static void functionSet(String function, Object object, String appendToKeyName, Object appendTo, Object name, String param) {
         switch (function) {
             case "current_timestamp":
-                if ((long) appendTo == 0L) {
+                if (! (appendTo instanceof Long)) {
                     JsonParseUtil.setValue(object, appendToKeyName, TransFunction.getCurrentTime());
                 }
                 break;
@@ -101,17 +89,17 @@ public class TransFormUtils {
                 break;
             case "geo_ip_detail":
                 if (name != null && appendTo == null) {
-                    JsonParseUtil.setValue(object, appendToKeyName, TransFunction.getGeoIpDetail(ipLookup, name.toString()));
+                    JsonParseUtil.setValue(object, appendToKeyName, TransFunction.getGeoIpDetail(name.toString()));
                 }
                 break;
             case "geo_asn":
                 if (name != null && appendTo == null) {
-                    JsonParseUtil.setValue(object, appendToKeyName, TransFunction.getGeoAsn(ipLookup, name.toString()));
+                    JsonParseUtil.setValue(object, appendToKeyName, TransFunction.getGeoAsn(name.toString()));
                 }
                 break;
             case "geo_ip_country":
                 if (name != null && appendTo == null) {
-                    JsonParseUtil.setValue(object, appendToKeyName, TransFunction.getGeoIpCountry(ipLookup, name.toString()));
+                    JsonParseUtil.setValue(object, appendToKeyName, TransFunction.getGeoIpCountry(name.toString()));
                 }
                 break;
             case "set_value":

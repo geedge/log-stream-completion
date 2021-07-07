@@ -4,7 +4,7 @@
 
     <groupId>com.zdjizhi</groupId>
     <artifactId>log-stream-completion-schema</artifactId>
-    <version>v3.21.06.07-Array</version>
+    <version>v3.21.06.28-jackson</version>
     <packaging>jar</packaging>
 
     <name>log-stream-completion-schema</name>
@@ -21,7 +21,6 @@
     </repositories>
 
     <build>
-
         <plugins>
 
             <plugin>
@@ -34,7 +33,7 @@
 
                 <executions>
                     <execution>
-                        <phase>install</phase>
+                        <phase>package</phase>
                         <goals>
                             <goal>shade</goal>
                         </goals>
@@ -43,14 +42,6 @@
                                 <transformer
                                         implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                     <mainClass>com.zdjizhi.topology.LogFlowWriteTopology</mainClass>
-                                </transformer>
-                                <transformer
-                                        implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-                                    <resource>META-INF/spring.handlers</resource>
-                                </transformer>
-                                <transformer
-                                        implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-                                    <resource>META-INF/spring.schemas</resource>
                                 </transformer>
                             </transformers>
                         </configuration>
@@ -67,7 +58,7 @@
                         <goals>
                             <goal>strip-jar</goal>
                         </goals>
-                        <phase>install</phase>
+                        <phase>package</phase>
                     </execution>
                 </executions>
             </plugin>
@@ -175,7 +166,7 @@
         <dependency>
             <groupId>com.zdjizhi</groupId>
             <artifactId>galaxy</artifactId>
-            <version>1.0.3</version>
+            <version>1.0.6</version>
             <exclusions>
                 <exclusion>
                     <artifactId>slf4j-log4j12</artifactId>
@@ -221,23 +212,6 @@
                 </exclusion>
             </exclusions>
         </dependency>
-
-        <!-- https://mvnrepository.com/artifact/org.apache.hbase/hbase-server -->
-        <!--<dependency>-->
-            <!--<groupId>org.apache.hbase</groupId>-->
-            <!--<artifactId>hbase-server</artifactId>-->
-            <!--<version>${hbase.version}</version>-->
-            <!--<exclusions>-->
-                <!--<exclusion>-->
-                    <!--<artifactId>slf4j-log4j12</artifactId>-->
-                    <!--<groupId>org.slf4j</groupId>-->
-                <!--</exclusion>-->
-                <!--<exclusion>-->
-                    <!--<artifactId>log4j-over-slf4j</artifactId>-->
-                    <!--<groupId>org.slf4j</groupId>-->
-                <!--</exclusion>-->
-            <!--</exclusions>-->
-        <!--</dependency>-->
 
         <!-- https://mvnrepository.com/artifact/org.apache.hadoop/hadoop-common -->
         <dependency>

@@ -42,22 +42,18 @@ public class KafkaLogSend {
 
 
     public void sendMessage(List<String> list) {
-        final int[] errorSum = {0};
         for (String value : list) {
             kafkaProducer.send(new ProducerRecord<>(FlowWriteConfig.RESULTS_OUTPUT_TOPIC, value), new Callback() {
                 @Override
                 public void onCompletion(RecordMetadata metadata, Exception exception) {
                     if (exception != null) {
                         logger.error("写入" + FlowWriteConfig.RESULTS_OUTPUT_TOPIC + "出现异常", exception);
-                        errorSum[0]++;
                     }
                 }
             });
-            if (errorSum[0] > FlowWriteConfig.MAX_FAILURE_NUM) {
-                list.clear();
-            }
         }
-        kafkaProducer.flush();
+//        kafkaProducer.flush();
+//        list.clear();
         logger.debug("Log sent to National Center successfully!!!!!");
     }
 

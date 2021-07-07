@@ -28,7 +28,6 @@ public final class StormRunner{
 	}
 	
 	public static void runTopologyRemotely(TopologyBuilder builder, String topologyName, Config conf ) throws AlreadyAliveException, InvalidTopologyException, AuthorizationException {
-		
 		StormSubmitter.submitTopologyWithProgressBar(topologyName, conf, builder.createTopology());
 	}
 	

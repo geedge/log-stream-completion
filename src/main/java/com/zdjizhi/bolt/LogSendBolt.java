@@ -24,13 +24,13 @@ import java.util.Map;
 public class LogSendBolt extends BaseBasicBolt {
     private static final long serialVersionUID = -3663610927224396615L;
     private static final Log logger = LogFactory.get();
-    private List<String> list;
+    private List<String> list = new LinkedList<>();
     private KafkaLogSend kafkaLogSend;
 
 
     @Override
     public void prepare(Map stormConf, TopologyContext context) {
-        list = new LinkedList<>();
+//        list = new LinkedList<>();
         kafkaLogSend = KafkaLogSend.getInstance();
     }
 

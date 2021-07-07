@@ -23,6 +23,8 @@ import java.util.*;
 public class JsonParseUtil {
     private static final Log logger = LogFactory.get();
 
+    private static List<String> dropFieldList = new ArrayList<>();
+
     /**
      * 模式匹配，给定一个类型字符串返回一个类类型
      *
@@ -143,6 +145,8 @@ public class JsonParseUtil {
                 }
                 //组合用来生成实体类的map
                 map.put(name, getClassName(type));
+            } else {
+                dropFieldList.add(JsonPath.read(filedStr, "$.name").toString());
             }
         }
         return map;
@@ -236,6 +240,5 @@ public class JsonParseUtil {
         }
         return list;
     }
-
 
 }
