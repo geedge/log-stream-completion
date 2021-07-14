@@ -3,7 +3,7 @@ package com.zdjizhi.bolt;
 import cn.hutool.log.Log;
 import cn.hutool.log.LogFactory;
 import com.zdjizhi.utils.StringUtil;
-import com.zdjizhi.utils.general.TransFormTypeMap;
+import com.zdjizhi.utils.general.TransFormMap;
 import org.apache.storm.task.TopologyContext;
 import org.apache.storm.topology.BasicOutputCollector;
 import org.apache.storm.topology.OutputFieldsDeclarer;
@@ -32,7 +32,7 @@ public class CompletionMapBolt extends BaseBasicBolt {
         try {
             String message = tuple.getString(0);
             if (StringUtil.isNotBlank(message)) {
-                basicOutputCollector.emit(new Values(TransFormTypeMap.dealCommonMessage(message)));
+                basicOutputCollector.emit(new Values(TransFormMap.dealCommonMessage(message)));
             }
         } catch (RuntimeException e) {
             logger.error("处理原始日志下发过程异常,异常信息：" + e);

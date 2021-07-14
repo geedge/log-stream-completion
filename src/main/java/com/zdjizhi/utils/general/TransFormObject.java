@@ -46,8 +46,7 @@ public class TransFormObject {
      */
     public static String dealCommonMessage(String message) {
         try {
-//            Object object = JsonMapper.fromJsonString(message, mapObject.getClass());
-            Object object = JSONObject.parseObject(message, mapObject.getClass());
+            Object object = JsonMapper.fromJsonString(message, mapObject.getClass());
             for (String[] strings : jobList) {
                 //用到的参数的值
                 Object name = JsonParseUtil.getValue(object, strings[0]);
@@ -61,8 +60,7 @@ public class TransFormObject {
                 String param = strings[3];
                 functionSet(function, object, appendToKeyName, appendTo, name, param);
             }
-//            return JsonMapper.toJsonString(object);
-            return JSONObject.toJSONString(object);
+            return JsonMapper.toJsonString(object);
         } catch (RuntimeException e) {
             logger.error("解析补全日志信息过程异常,异常信息:" + e + "\n" + message);
             return "";

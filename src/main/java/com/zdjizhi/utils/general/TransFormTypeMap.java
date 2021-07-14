@@ -38,7 +38,6 @@ public class TransFormTypeMap {
     public static String dealCommonMessage(String message) {
         try {
             Map<String, Object> jsonMap = (Map<String, Object>) JsonMapper.fromJsonString(message, Map.class);
-//            Map<String, Object> jsonMap = JsonTypeUtils.typeTransform((Map<String, Object>) JsonMapper.fromJsonString(message, Map.class));
             for (String[] strings : jobList) {
                 //用到的参数的值
                 Object name = JsonParseUtil.getValue(jsonMap, strings[0]);
@@ -52,7 +51,7 @@ public class TransFormTypeMap {
                 String param = strings[3];
                 functionSet(function, jsonMap, appendToKeyName, appendTo, name, param);
             }
-            return JSONObject.toJSONString(JsonTypeUtils.typeTransform(jsonMap));
+            return JsonMapper.toJsonString(JsonTypeUtils.typeTransform(jsonMap));
         } catch (RuntimeException e) {
             logger.error("解析补全日志信息过程异常,异常信息:" + e + "\n" + message);
             return "";

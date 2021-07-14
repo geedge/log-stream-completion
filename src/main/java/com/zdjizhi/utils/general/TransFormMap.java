@@ -51,7 +51,7 @@ public class TransFormMap {
                 String param = strings[3];
                 functionSet(function, jsonMap, appendToKeyName, appendTo, name, param);
             }
-            return JSONObject.toJSONString(jsonMap);
+            return JsonMapper.toJsonString(jsonMap);
         } catch (RuntimeException e) {
             logger.error("解析补全日志信息过程异常,异常信息:" + e + "\n" + message);
             return "";

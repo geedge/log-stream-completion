@@ -134,12 +134,13 @@ public class JsonTypeUtils {
      * @return Long value
      */
     private static long checkLongValue(Object value) {
+
         Long longVal = TypeUtils.castToLong(value);
+
         if (longVal == null) {
             return 0L;
         }
 
-//        return longVal.longValue();
         return longVal;
     }
 
@@ -176,11 +177,10 @@ public class JsonTypeUtils {
     private static int getIntValue(Object value) {
 
         Integer intVal = TypeUtils.castToInt(value);
+
         if (intVal == null) {
             return 0;
         }
-
-//        return intVal.intValue();
         return intVal;
     }
 

@@ -185,7 +185,7 @@ public class TypeUtils {
         throw new FlowWriteException("can not cast to long, value : " + value);
     }
 
-    public static long longValue(BigDecimal decimal) {
+    private static long longValue(BigDecimal decimal) {
         if (decimal == null) {
             return 0;
         }
