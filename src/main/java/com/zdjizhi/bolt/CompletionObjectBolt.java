@@ -3,6 +3,7 @@ package com.zdjizhi.bolt;
 import cn.hutool.log.Log;
 import cn.hutool.log.LogFactory;
 import com.zdjizhi.utils.StringUtil;
+import com.zdjizhi.utils.general.TransFormObject;
 import org.apache.storm.task.TopologyContext;
 import org.apache.storm.topology.BasicOutputCollector;
 import org.apache.storm.topology.OutputFieldsDeclarer;
@@ -13,13 +14,11 @@ import org.apache.storm.tuple.Values;
 
 import java.util.Map;
 
-import static com.zdjizhi.utils.general.TransFormUtils.dealCommonMessage;
-
 /**
  * @author qidaijie
  */
 
-public class CompletionBolt extends BaseBasicBolt {
+public class CompletionObjectBolt extends BaseBasicBolt {
     private static final long serialVersionUID = 9006119186526123734L;
     private static final Log logger = LogFactory.get();
 
@@ -35,7 +34,7 @@ public class CompletionBolt extends BaseBasicBolt {
         try {
             String message = tuple.getString(0);
             if (StringUtil.isNotBlank(message)) {
-                basicOutputCollector.emit(new Values(dealCommonMessage(message)));
+                basicOutputCollector.emit(new Values(TransFormObject.dealCommonMessage(message)));
             }
         } catch (RuntimeException e) {
             logger.error("处理原始日志下发过程异常,异常信息：" + e);

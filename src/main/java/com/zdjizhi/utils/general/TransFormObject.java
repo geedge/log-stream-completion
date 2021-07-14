@@ -3,6 +3,8 @@ package com.zdjizhi.utils.general;
 
 import cn.hutool.log.Log;
 import cn.hutool.log.LogFactory;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.zdjizhi.common.FlowWriteConfig;
 import com.zdjizhi.utils.JsonMapper;
 import com.zdjizhi.utils.json.JsonParseUtil;
@@ -16,7 +18,7 @@ import java.util.HashMap;
  *
  * @author qidaijie
  */
-public class TransFormUtils {
+public class TransFormObject {
     private static final Log logger = LogFactory.get();
 
     /**
@@ -44,7 +46,8 @@ public class TransFormUtils {
      */
     public static String dealCommonMessage(String message) {
         try {
-            Object object = JsonMapper.fromJsonString(message, mapObject.getClass());
+//            Object object = JsonMapper.fromJsonString(message, mapObject.getClass());
+            Object object = JSONObject.parseObject(message, mapObject.getClass());
             for (String[] strings : jobList) {
                 //用到的参数的值
                 Object name = JsonParseUtil.getValue(object, strings[0]);
@@ -58,10 +61,10 @@ public class TransFormUtils {
                 String param = strings[3];
                 functionSet(function, object, appendToKeyName, appendTo, name, param);
             }
-            return JsonMapper.toJsonString(object);
+//            return JsonMapper.toJsonString(object);
+            return JSONObject.toJSONString(object);
         } catch (RuntimeException e) {
-            logger.error("解析补全日志信息过程异常,异常信息:" + e);
-            e.printStackTrace();
+            logger.error("解析补全日志信息过程异常,异常信息:" + e + "\n" + message);
             return "";
         }
     }
@@ -80,7 +83,7 @@ public class TransFormUtils {
     private static void functionSet(String function, Object object, String appendToKeyName, Object appendTo, Object name, String param) {
         switch (function) {
             case "current_timestamp":
-                if (! (appendTo instanceof Long)) {
+                if (!(appendTo instanceof Long)) {
                     JsonParseUtil.setValue(object, appendToKeyName, TransFunction.getCurrentTime());
                 }
                 break;
@@ -139,7 +142,7 @@ public class TransFormUtils {
                 break;
             case "flattenSpec":
                 if (name != null && param != null) {
-                    JsonParseUtil.setValue(object, appendToKeyName, TransFunction.flattenSpec(name.toString(), TransFunction.isJsonValue(object, param)));
+                    JsonParseUtil.setValue(object, appendToKeyName, TransFunction.flattenSpec(name.toString(), param));
                 }
                 break;
             default:

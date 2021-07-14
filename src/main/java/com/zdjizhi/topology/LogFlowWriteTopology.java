@@ -1,7 +1,9 @@
 package com.zdjizhi.topology;
 
 
-import com.zdjizhi.bolt.CompletionBolt;
+import com.zdjizhi.bolt.CompletionMapBolt;
+import com.zdjizhi.bolt.CompletionTypeMapBolt;
+import com.zdjizhi.bolt.CompletionObjectBolt;
 import com.zdjizhi.bolt.LogSendBolt;
 import com.zdjizhi.common.DefaultProConfig;
 import com.zdjizhi.common.FlowWriteConfig;
@@ -51,9 +53,9 @@ public class LogFlowWriteTopology {
 
     private void runRemotely() throws AlreadyAliveException, InvalidTopologyException, AuthorizationException {
         topologyConfig.setNumWorkers(FlowWriteConfig.TOPOLOGY_WORKERS);
-        topologyConfig.put(Config.TOPOLOGY_TRANSFER_BUFFER_SIZE,DefaultProConfig.TRANSFER_BUFFER_SIZE);
-        topologyConfig.put(Config.TOPOLOGY_EXECUTOR_RECEIVE_BUFFER_SIZE,DefaultProConfig.EXECUTOR_RECEIVE_BUFFER_SIZE);
-        topologyConfig.put(Config.TOPOLOGY_EXECUTOR_SEND_BUFFER_SIZE,DefaultProConfig.EXECUTOR_SEND_BUFFER_SIZE);
+        topologyConfig.put(Config.TOPOLOGY_TRANSFER_BUFFER_SIZE, DefaultProConfig.TRANSFER_BUFFER_SIZE);
+        topologyConfig.put(Config.TOPOLOGY_EXECUTOR_RECEIVE_BUFFER_SIZE, DefaultProConfig.EXECUTOR_RECEIVE_BUFFER_SIZE);
+        topologyConfig.put(Config.TOPOLOGY_EXECUTOR_SEND_BUFFER_SIZE, DefaultProConfig.EXECUTOR_SEND_BUFFER_SIZE);
         StormRunner.runTopologyRemotely(builder, topologyName, topologyConfig);
     }
 
@@ -62,12 +64,33 @@ public class LogFlowWriteTopology {
         builder = new TopologyBuilder();
         builder.setSpout("LogFlowWriteSpout", new CustomizedKafkaSpout(), FlowWriteConfig.SPOUT_PARALLELISM);
         if (need.equals(FlowWriteConfig.LOG_NEED_COMPLETE)) {
-            builder.setBolt("LogCompletionBolt", new CompletionBolt(),
-                    FlowWriteConfig.COMPLETION_BOLT_PARALLELISM).localOrShuffleGrouping("LogFlowWriteSpout");
-            builder.setBolt("LogSendBolt", new LogSendBolt(),
-                    FlowWriteConfig.KAFKA_BOLT_PARALLELISM).localOrShuffleGrouping("LogCompletionBolt");
+            switch (FlowWriteConfig.COMPLETE_CHECK_TYPE) {
+                case 0:
+                    builder.setBolt("LogObjectCompletionBolt", new CompletionObjectBolt(),
+                            FlowWriteConfig.COMPLETION_BOLT_PARALLELISM).localOrShuffleGrouping("LogFlowWriteSpout");
+                    builder.setBolt("SendKafkaBolt", new LogSendBolt(),
+                            FlowWriteConfig.KAFKA_BOLT_PARALLELISM).localOrShuffleGrouping("LogObjectCompletionBolt");
+                    break;
+                case 1:
+                    builder.setBolt("LogTypeMapCompletionBolt", new CompletionTypeMapBolt(),
+                            FlowWriteConfig.COMPLETION_BOLT_PARALLELISM).localOrShuffleGrouping("LogFlowWriteSpout");
+                    builder.setBolt("SendKafkaBolt", new LogSendBolt(),
+                            FlowWriteConfig.KAFKA_BOLT_PARALLELISM).localOrShuffleGrouping("LogTypeMapCompletionBolt");
+                    break;
+                case 2:
+                    builder.setBolt("LogMapCompletionBolt", new CompletionMapBolt(),
+                            FlowWriteConfig.COMPLETION_BOLT_PARALLELISM).localOrShuffleGrouping("LogFlowWriteSpout");
+                    builder.setBolt("SendKafkaBolt", new LogSendBolt(),
+                            FlowWriteConfig.KAFKA_BOLT_PARALLELISM).localOrShuffleGrouping("LogMapCompletionBolt");
+                    break;
+                default:
+                    builder.setBolt("LogCompletionBolt", new CompletionObjectBolt(),
+                            FlowWriteConfig.COMPLETION_BOLT_PARALLELISM).localOrShuffleGrouping("LogFlowWriteSpout");
+                    builder.setBolt("SendKafkaBolt", new LogSendBolt(),
+                            FlowWriteConfig.KAFKA_BOLT_PARALLELISM).localOrShuffleGrouping("LogCompletionBolt");
+            }
         } else {
-            builder.setBolt("LogSendBolt", new LogSendBolt(),
+            builder.setBolt("SendKafkaBolt", new LogSendBolt(),
                     FlowWriteConfig.KAFKA_BOLT_PARALLELISM).localOrShuffleGrouping("LogFlowWriteSpout");
         }
     }

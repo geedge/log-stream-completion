@@ -21,9 +21,10 @@ import java.util.*;
  * @author qidaijie
  */
 public class JsonParseUtil {
+
     private static final Log logger = LogFactory.get();
 
-    private static List<String> dropFieldList = new ArrayList<>();
+    private static ArrayList<String> dropList = new ArrayList<>();
 
     /**
      * 模式匹配，给定一个类型字符串返回一个类类型
@@ -39,17 +40,14 @@ public class JsonParseUtil {
             case "int":
                 clazz = Integer.class;
                 break;
-            case "String":
+            case "string":
                 clazz = String.class;
                 break;
             case "long":
                 clazz = long.class;
                 break;
             case "array":
-                clazz = JSONArray.class;
-                break;
-            case "Integer":
-                clazz = Integer.class;
+                clazz = List.class;
                 break;
             case "double":
                 clazz = double.class;
@@ -76,22 +74,6 @@ public class JsonParseUtil {
     }
 
     /**
-     * 根据反射生成对象的方法
-     *
-     * @param properties 反射类用的map
-     * @return 生成的Object类型的对象
-     */
-    public static Object generateObject(Map properties) {
-        BeanGenerator generator = new BeanGenerator();
-        Set keySet = properties.keySet();
-        for (Object aKeySet : keySet) {
-            String key = (String) aKeySet;
-            generator.addProperty(key, (Class) properties.get(key));
-        }
-        return generator.create();
-    }
-
-    /**
      * 获取属性值的方法
      *
      * @param obj      对象
@@ -99,8 +81,44 @@ public class JsonParseUtil {
      * @return 属性的值
      */
     public static Object getValue(Object obj, String property) {
-        BeanMap beanMap = BeanMap.create(obj);
-        return beanMap.get(property);
+        try {
+            BeanMap beanMap = BeanMap.create(obj);
+            return beanMap.get(property);
+        } catch (RuntimeException e) {
+            logger.error("获取json-value异常，异常key：" + property + "异常信息为：" + e);
+            return null;
+        }
+    }
+
+    /**
+     * 获取属性值的方法
+     *
+     * @param jsonMap  原始日志
+     * @param property key
+     * @return 属性的值
+     */
+    public static Object getValue(Map<String, Object> jsonMap, String property) {
+        try {
+            return jsonMap.getOrDefault(property, null);
+        } catch (RuntimeException e) {
+            logger.error("获取json-value异常，异常key：" + property + "异常信息为：" + e);
+            return null;
+        }
+    }
+
+    /**
+     * 更新属性值的方法
+     *
+     * @param jsonMap  原始日志json map
+     * @param property 更新的key
+     * @param value    更新的值
+     */
+    public static void setValue(Map<String, Object> jsonMap, String property, Object value) {
+        try {
+            jsonMap.put(property, value);
+        } catch (RuntimeException e) {
+            logger.error("赋予实体类错误类型数据", e);
+        }
     }
 
     /**
@@ -117,6 +135,22 @@ public class JsonParseUtil {
         } catch (ClassCastException e) {
             logger.error("赋予实体类错误类型数据", e);
         }
+    }
+
+    /**
+     * 根据反射生成对象的方法
+     *
+     * @param properties 反射类用的map
+     * @return 生成的Object类型的对象
+     */
+    public static Object generateObject(Map properties) {
+        BeanGenerator generator = new BeanGenerator();
+        Set keySet = properties.keySet();
+        for (Object aKeySet : keySet) {
+            String key = (String) aKeySet;
+            generator.addProperty(key, (Class) properties.get(key));
+        }
+        return generator.create();
     }
 
     /**
@@ -146,7 +180,7 @@ public class JsonParseUtil {
                 //组合用来生成实体类的map
                 map.put(name, getClassName(type));
             } else {
-                dropFieldList.add(JsonPath.read(filedStr, "$.name").toString());
+                dropList.add(filedStr);
             }
         }
         return map;
@@ -171,6 +205,12 @@ public class JsonParseUtil {
             }
         }
         return isKeepField;
+    }
+
+    static void dropJsonField(Map<String, Object> jsonMap) {
+        for (String field : dropList) {
+            jsonMap.remove(field);
+        }
     }
 
     /**
