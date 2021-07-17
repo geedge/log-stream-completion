@@ -10,6 +10,7 @@ import com.zdjizhi.utils.json.JsonParseUtil;
 import com.zdjizhi.utils.json.JsonTypeUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Map;
 
 
@@ -40,18 +41,19 @@ public class TransFormTypeMap {
             Map<String, Object> jsonMap = (Map<String, Object>) JsonMapper.fromJsonString(message, Map.class);
             for (String[] strings : jobList) {
                 //用到的参数的值
-                Object name = JsonParseUtil.getValue(jsonMap, strings[0]);
+                Object logValue = JsonParseUtil.getValue(jsonMap, strings[0]);
                 //需要补全的字段的key
                 String appendToKeyName = strings[1];
                 //需要补全的字段的值
-                Object appendTo = JsonParseUtil.getValue(jsonMap, appendToKeyName);
+                Object appendToKeyValue = JsonParseUtil.getValue(jsonMap, appendToKeyName);
                 //匹配操作函数的字段
                 String function = strings[2];
                 //额外的参数的值
                 String param = strings[3];
-                functionSet(function, jsonMap, appendToKeyName, appendTo, name, param);
+                functionSet(function, jsonMap, appendToKeyName, appendToKeyValue, logValue, param);
             }
             return JsonMapper.toJsonString(JsonTypeUtils.typeTransform(jsonMap));
+//            return JsonMapper.toJson(JsonTypeUtils.typeTransform(jsonMap));
         } catch (RuntimeException e) {
             logger.error("解析补全日志信息过程异常,异常信息:" + e + "\n" + message);
             return "";
@@ -62,17 +64,17 @@ public class TransFormTypeMap {
     /**
      * 根据schema描述对应字段进行操作的 函数集合
      *
-     * @param function        匹配操作函数的字段
-     * @param jsonMap         原始日志解析map
-     * @param appendToKeyName 需要补全的字段的key
-     * @param appendTo        需要补全的字段的值
-     * @param name            用到的参数的值
-     * @param param           额外的参数的值
+     * @param function         匹配操作函数的字段
+     * @param jsonMap          原始日志解析map
+     * @param appendToKeyName  需要补全的字段的key
+     * @param appendToKeyValue 需要补全的字段的值
+     * @param logValue         用到的参数的值
+     * @param param            额外的参数的值
      */
-    private static void functionSet(String function, Map<String, Object> jsonMap, String appendToKeyName, Object appendTo, Object name, String param) {
+    private static void functionSet(String function, Map<String, Object> jsonMap, String appendToKeyName, Object appendToKeyValue, Object logValue, String param) {
         switch (function) {
             case "current_timestamp":
-                if (!(appendTo instanceof Long)) {
+                if (!(appendToKeyValue instanceof Long)) {
                     JsonParseUtil.setValue(jsonMap, appendToKeyName, TransFunction.getCurrentTime());
                 }
                 break;
@@ -80,28 +82,28 @@ public class TransFormTypeMap {
                 JsonParseUtil.setValue(jsonMap, appendToKeyName, SnowflakeId.generateId());
                 break;
             case "geo_ip_detail":
-                if (name != null && appendTo == null) {
-                    JsonParseUtil.setValue(jsonMap, appendToKeyName, TransFunction.getGeoIpDetail(name.toString()));
+                if (logValue != null && appendToKeyValue == null) {
+                    JsonParseUtil.setValue(jsonMap, appendToKeyName, TransFunction.getGeoIpDetail(logValue.toString()));
                 }
                 break;
             case "geo_asn":
-                if (name != null && appendTo == null) {
-                    JsonParseUtil.setValue(jsonMap, appendToKeyName, TransFunction.getGeoAsn(name.toString()));
+                if (logValue != null && appendToKeyValue == null) {
+                    JsonParseUtil.setValue(jsonMap, appendToKeyName, TransFunction.getGeoAsn(logValue.toString()));
                 }
                 break;
             case "geo_ip_country":
-                if (name != null && appendTo == null) {
-                    JsonParseUtil.setValue(jsonMap, appendToKeyName, TransFunction.getGeoIpCountry(name.toString()));
+                if (logValue != null && appendToKeyValue == null) {
+                    JsonParseUtil.setValue(jsonMap, appendToKeyName, TransFunction.getGeoIpCountry(logValue.toString()));
                 }
                 break;
             case "set_value":
-                if (name != null && param != null) {
+                if (param != null) {
                     JsonParseUtil.setValue(jsonMap, appendToKeyName, param);
                 }
                 break;
             case "get_value":
-                if (name != null) {
-                    JsonParseUtil.setValue(jsonMap, appendToKeyName, name);
+                if (logValue != null) {
+                    JsonParseUtil.setValue(jsonMap, appendToKeyName, logValue);
                 }
                 break;
             case "if":
@@ -110,28 +112,28 @@ public class TransFormTypeMap {
                 }
                 break;
             case "sub_domain":
-                if (appendTo == null && name != null) {
-                    JsonParseUtil.setValue(jsonMap, appendToKeyName, TransFunction.getTopDomain(name.toString()));
+                if (appendToKeyValue == null && logValue != null) {
+                    JsonParseUtil.setValue(jsonMap, appendToKeyName, TransFunction.getTopDomain(logValue.toString()));
                 }
                 break;
             case "radius_match":
-                if (name != null) {
-                    JsonParseUtil.setValue(jsonMap, appendToKeyName, TransFunction.radiusMatch(name.toString()));
+                if (logValue != null) {
+                    JsonParseUtil.setValue(jsonMap, appendToKeyName, TransFunction.radiusMatch(logValue.toString()));
                 }
                 break;
             case "app_match":
-                if (name != null && appendTo == null) {
-                    JsonParseUtil.setValue(jsonMap, appendToKeyName, TransFunction.appMatch(name.toString()));
+                if (logValue != null && appendToKeyValue == null) {
+                    JsonParseUtil.setValue(jsonMap, appendToKeyName, TransFunction.appMatch(logValue.toString()));
                 }
                 break;
             case "decode_of_base64":
-                if (name != null) {
-                    JsonParseUtil.setValue(jsonMap, appendToKeyName, TransFunction.decodeBase64(name.toString(), TransFunction.isJsonValue(jsonMap, param)));
+                if (logValue != null) {
+                    JsonParseUtil.setValue(jsonMap, appendToKeyName, TransFunction.decodeBase64(logValue.toString(), TransFunction.isJsonValue(jsonMap, param)));
                 }
                 break;
             case "flattenSpec":
-                if (name != null && param != null) {
-                    JsonParseUtil.setValue(jsonMap, appendToKeyName, TransFunction.flattenSpec(name.toString(), param));
+                if (logValue != null && param != null) {
+                    JsonParseUtil.setValue(jsonMap, appendToKeyName, TransFunction.flattenSpec(logValue.toString(), param));
                 }
                 break;
             default:

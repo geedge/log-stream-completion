@@ -4,7 +4,7 @@
 
     <groupId>com.zdjizhi</groupId>
     <artifactId>log-stream-completion-schema</artifactId>
-    <version>v3.21.07.13-map</version>
+    <version>v3.21.07.17-typeMap</version>
     <packaging>jar</packaging>
 
     <name>log-stream-completion-schema</name>

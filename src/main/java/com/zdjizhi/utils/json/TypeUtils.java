@@ -154,10 +154,6 @@ public class TypeUtils {
             return null;
         }
 
-        if(value instanceof BigDecimal){
-            return longValue((BigDecimal) value);
-        }
-
 //        此判断数值超范围不抛出异常，会截取成对应类型数值
         if (value instanceof Number) {
             return ((Number) value).longValue();
@@ -183,19 +179,6 @@ public class TypeUtils {
         }
 
         throw new FlowWriteException("can not cast to long, value : " + value);
-    }
-
-    private static long longValue(BigDecimal decimal) {
-        if (decimal == null) {
-            return 0;
-        }
-
-        int scale = decimal.scale();
-        if (scale >= -100 && scale <= 100) {
-            return decimal.longValue();
-        }
-
-        return decimal.longValueExact();
     }
 
 }
